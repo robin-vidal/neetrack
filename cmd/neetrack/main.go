@@ -24,10 +24,6 @@ import (
 
 const shutdownGrace = 10 * time.Second
 
-// defaultTargetRetention mirrors user_settings.target_retention's schema
-// default, until settings are wired up.
-const defaultTargetRetention = 0.90
-
 func main() {
 	if err := run(os.Args[1:]); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -115,7 +111,15 @@ func replay(cfg config.Config, args []string) error {
 		return fmt.Errorf("looking up user %q: %w", *name, err)
 	}
 
-	settings := scheduler.Settings{TargetRetention: defaultTargetRetention}
+	userSettings, err := st.Settings(ctx, creds.UserID)
+	if err != nil {
+		return fmt.Errorf("loading settings for %q: %w", *name, err)
+	}
+
+	settings := scheduler.Settings{
+		TargetRetention: userSettings.TargetRetention,
+		TargetDate:      userSettings.TargetDate,
+	}
 	if err := st.ReplayCards(ctx, creds.UserID, settings); err != nil {
 		return fmt.Errorf("replaying attempts: %w", err)
 	}
