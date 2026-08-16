@@ -11,6 +11,7 @@ test:
 
 lint:
 	golangci-lint run ./...
+	cd web && npm run lint && npm run typecheck
 
 migrate:
 	go run ./cmd/neetrack migrate
