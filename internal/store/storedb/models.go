@@ -8,6 +8,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Attempt struct {
+	ID              int64              `json:"id"`
+	UserID          int64              `json:"user_id"`
+	ProblemSlug     string             `json:"problem_slug"`
+	Pattern         string             `json:"pattern"`
+	Rating          int16              `json:"rating"`
+	DurationSeconds pgtype.Int4        `json:"duration_seconds"`
+	UsedHint        bool               `json:"used_hint"`
+	SawSolution     bool               `json:"saw_solution"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+type PatternCard struct {
+	UserID       int64              `json:"user_id"`
+	Pattern      string             `json:"pattern"`
+	Stability    float64            `json:"stability"`
+	Difficulty   float64            `json:"difficulty"`
+	DueAt        pgtype.Timestamptz `json:"due_at"`
+	LastReviewAt pgtype.Timestamptz `json:"last_review_at"`
+	Reps         int32              `json:"reps"`
+	Lapses       int32              `json:"lapses"`
+	State        int16              `json:"state"`
+}
+
 type Session struct {
 	ID        []byte             `json:"id"`
 	UserID    int64              `json:"user_id"`

@@ -33,6 +33,7 @@ type Catalog struct {
 	problems  []Problem
 	patterns  []string
 	byPattern map[string][]Problem
+	bySlug    map[string]Problem
 }
 
 // Load parses the embedded problem catalog.
@@ -49,6 +50,7 @@ func Load() (*Catalog, error) {
 
 	patterns := make([]string, 0)
 	byPattern := make(map[string][]Problem)
+	bySlug := make(map[string]Problem, len(problems))
 	seen := make(map[string]bool)
 	for _, p := range problems {
 		if !seen[p.Pattern] {
@@ -56,9 +58,10 @@ func Load() (*Catalog, error) {
 			patterns = append(patterns, p.Pattern)
 		}
 		byPattern[p.Pattern] = append(byPattern[p.Pattern], p)
+		bySlug[p.Slug] = p
 	}
 
-	return &Catalog{problems: problems, patterns: patterns, byPattern: byPattern}, nil
+	return &Catalog{problems: problems, patterns: patterns, byPattern: byPattern, bySlug: bySlug}, nil
 }
 
 // Problems returns every problem, in roadmap order.
@@ -74,4 +77,10 @@ func (c *Catalog) Patterns() []string {
 // ByPattern returns the problems belonging to pattern, in roadmap order.
 func (c *Catalog) ByPattern(pattern string) []Problem {
 	return c.byPattern[pattern]
+}
+
+// BySlug returns the problem with the given slug, if any.
+func (c *Catalog) BySlug(slug string) (Problem, bool) {
+	p, ok := c.bySlug[slug]
+	return p, ok
 }
