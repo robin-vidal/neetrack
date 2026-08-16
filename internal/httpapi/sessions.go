@@ -21,6 +21,7 @@ type sessionItem struct {
 	Difficulty     string   `json:"difficulty"`
 	Reason         string   `json:"reason"`
 	Retrievability *float64 `json:"retrievability"`
+	NeetcodeSlug   string   `json:"neetcode_slug"`
 }
 
 func (s *Server) handleComposeSession(w http.ResponseWriter, r *http.Request) {
@@ -38,6 +39,16 @@ func (s *Server) handleComposeSession(w http.ResponseWriter, r *http.Request) {
 
 	size := clamp(body.Size, minSessionSize, maxSessionSize)
 	newPct := clamp(body.NewPct, 0, 100)
+
+	settings, err := s.store.Settings(ctx, user.ID)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "loading settings", "error", err)
+		writeJSON(w, http.StatusInternalServerError, errorResponse{
+			Error:   "internal_error",
+			Message: "Erreur interne, réessaie plus tard.",
+		})
+		return
+	}
 
 	cards, err := s.store.PatternCards(ctx, user.ID)
 	if err != nil {
@@ -59,22 +70,38 @@ func (s *Server) handleComposeSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	links, err := s.store.ProblemLinks(ctx, user.ID)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "loading problem links", "error", err)
+		writeJSON(w, http.StatusInternalServerError, errorResponse{
+			Error:   "internal_error",
+			Message: "Erreur interne, réessaie plus tard.",
+		})
+		return
+	}
+
 	req := scheduler.Request{
 		Size:      size,
 		NewPct:    newPct,
-		BlockSize: defaultBlockSize,
-		OpenMax:   defaultOpenMax,
+		BlockSize: settings.BlockSize,
+		OpenMax:   settings.OpenMax,
 	}
 	items := scheduler.Compose(s.catalog, cards, attempts, req, time.Now())
 
 	resp := make([]sessionItem, len(items))
 	for i, it := range items {
+		neetcodeSlug := it.Problem.Slug
+		if override, ok := links[it.Problem.Slug]; ok {
+			neetcodeSlug = override
+		}
+
 		item := sessionItem{
-			Slug:       it.Problem.Slug,
-			Title:      it.Problem.Title,
-			Pattern:    it.Problem.Pattern,
-			Difficulty: string(it.Problem.Difficulty),
-			Reason:     string(it.Reason),
+			Slug:         it.Problem.Slug,
+			Title:        it.Problem.Title,
+			Pattern:      it.Problem.Pattern,
+			Difficulty:   string(it.Problem.Difficulty),
+			Reason:       string(it.Reason),
+			NeetcodeSlug: neetcodeSlug,
 		}
 		if it.Reason == scheduler.ReasonReview {
 			r := it.Retrievability

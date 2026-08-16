@@ -61,8 +61,18 @@ func (s *Server) handleCreateAttempt(w http.ResponseWriter, r *http.Request) {
 		clientRating = &rating
 	}
 
+	settings, err := s.store.Settings(ctx, user.ID)
+	if err != nil {
+		s.logger.ErrorContext(ctx, "loading settings", "error", err)
+		writeJSON(w, http.StatusInternalServerError, errorResponse{
+			Error:   "internal_error",
+			Message: "Erreur interne, réessaie plus tard.",
+		})
+		return
+	}
+
 	now := time.Now()
-	retention := scheduler.EffectiveRetention(defaultTargetRetention, nil, now)
+	retention := scheduler.EffectiveRetention(settings.TargetRetention, settings.TargetDate, now)
 
 	result, err := s.store.RecordAttempt(ctx, store.AttemptParams{
 		UserID:           user.ID,
