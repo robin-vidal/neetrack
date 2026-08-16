@@ -3,6 +3,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -17,10 +18,15 @@ import (
 	"github.com/robin-vidal/neetrack/internal/catalog"
 	"github.com/robin-vidal/neetrack/internal/config"
 	"github.com/robin-vidal/neetrack/internal/httpapi"
+	"github.com/robin-vidal/neetrack/internal/scheduler"
 	"github.com/robin-vidal/neetrack/internal/store"
 )
 
 const shutdownGrace = 10 * time.Second
+
+// defaultTargetRetention mirrors user_settings.target_retention's schema
+// default, until settings are wired up.
+const defaultTargetRetention = 0.90
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -51,6 +57,8 @@ func run(args []string) error {
 				return fmt.Errorf("usage: neetrack adduser <name>")
 			}
 			return addUser(cfg, args[1])
+		case "replay":
+			return replay(cfg, args[1:])
 		}
 	}
 
@@ -82,6 +90,37 @@ func addUser(cfg config.Config, name string) error {
 	}
 
 	fmt.Printf("Utilisateur %q créé.\n", name)
+	return nil
+}
+
+func replay(cfg config.Config, args []string) error {
+	fs := flag.NewFlagSet("replay", flag.ContinueOnError)
+	name := fs.String("user", "", "name of the user whose pattern cards to rebuild")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *name == "" {
+		return fmt.Errorf("usage: neetrack replay --user=<name>")
+	}
+
+	ctx := context.Background()
+	st, err := store.New(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return fmt.Errorf("connecting to database: %w", err)
+	}
+	defer st.Close()
+
+	creds, err := st.UserByName(ctx, *name)
+	if err != nil {
+		return fmt.Errorf("looking up user %q: %w", *name, err)
+	}
+
+	settings := scheduler.Settings{TargetRetention: defaultTargetRetention}
+	if err := st.ReplayCards(ctx, creds.UserID, settings); err != nil {
+		return fmt.Errorf("replaying attempts: %w", err)
+	}
+
+	fmt.Printf("Cartes reconstruites pour %q.\n", *name)
 	return nil
 }
 
