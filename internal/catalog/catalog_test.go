@@ -60,3 +60,22 @@ func TestByPatternUnknown(t *testing.T) {
 		t.Errorf("ByPattern(unknown) = %v, want nil", got)
 	}
 }
+
+func TestBySlug(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("Load() error: %v", err)
+	}
+
+	p, ok := c.BySlug("two-sum")
+	if !ok {
+		t.Fatalf("BySlug(%q) not found", "two-sum")
+	}
+	if p.Title != "Two Sum" {
+		t.Errorf("BySlug(%q).Title = %q, want %q", "two-sum", p.Title, "Two Sum")
+	}
+
+	if _, ok := c.BySlug("does-not-exist"); ok {
+		t.Errorf("BySlug(unknown) found a problem, want not found")
+	}
+}
