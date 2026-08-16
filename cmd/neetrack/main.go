@@ -11,6 +11,8 @@ import (
 	"syscall"
 	"time"
 
+	"golang.org/x/term"
+
 	"github.com/robin-vidal/neetrack/internal/auth"
 	"github.com/robin-vidal/neetrack/internal/config"
 	"github.com/robin-vidal/neetrack/internal/httpapi"
@@ -38,12 +40,48 @@ func run(args []string) error {
 		return fmt.Errorf("running migrations: %w", err)
 	}
 
-	if len(args) > 0 && args[0] == "migrate" {
-		logger.Info("migrations applied")
-		return nil
+	if len(args) > 0 {
+		switch args[0] {
+		case "migrate":
+			logger.Info("migrations applied")
+			return nil
+		case "adduser":
+			if len(args) != 2 {
+				return fmt.Errorf("usage: neetrack adduser <name>")
+			}
+			return addUser(cfg, args[1])
+		}
 	}
 
 	return serve(cfg, logger)
+}
+
+func addUser(cfg config.Config, name string) error {
+	fmt.Fprint(os.Stderr, "Mot de passe : ")
+	passwordBytes, err := term.ReadPassword(int(os.Stdin.Fd()))
+	fmt.Fprintln(os.Stderr)
+	if err != nil {
+		return fmt.Errorf("reading password: %w", err)
+	}
+
+	hash, err := auth.HashPassword(string(passwordBytes))
+	if err != nil {
+		return fmt.Errorf("hashing password: %w", err)
+	}
+
+	ctx := context.Background()
+	st, err := store.New(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return fmt.Errorf("connecting to database: %w", err)
+	}
+	defer st.Close()
+
+	if _, err := st.CreateUser(ctx, name, hash); err != nil {
+		return fmt.Errorf("creating user: %w", err)
+	}
+
+	fmt.Printf("Utilisateur %q créé.\n", name)
+	return nil
 }
 
 func serve(cfg config.Config, logger *slog.Logger) error {
