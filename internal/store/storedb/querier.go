@@ -9,11 +9,19 @@ import (
 )
 
 type Querier interface {
+	AttemptsByUser(ctx context.Context, userID int64) ([]AttemptsByUserRow, error)
+	CreateAttempt(ctx context.Context, arg CreateAttemptParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	DeletePatternCardsByUser(ctx context.Context, userID int64) error
 	DeleteSession(ctx context.Context, id []byte) error
+	DoneCountByPattern(ctx context.Context, userID int64) ([]DoneCountByPatternRow, error)
 	ExtendSession(ctx context.Context, arg ExtendSessionParams) error
+	LastAttemptPerProblem(ctx context.Context, userID int64) ([]LastAttemptPerProblemRow, error)
+	PatternCardByUserAndPattern(ctx context.Context, arg PatternCardByUserAndPatternParams) (PatternCardByUserAndPatternRow, error)
+	PatternCardsByUser(ctx context.Context, userID int64) ([]PatternCardsByUserRow, error)
 	SessionWithUserByID(ctx context.Context, id []byte) (SessionWithUserByIDRow, error)
+	UpsertPatternCard(ctx context.Context, arg UpsertPatternCardParams) error
 	UserByName(ctx context.Context, name string) (User, error)
 }
 
