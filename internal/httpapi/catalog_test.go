@@ -5,23 +5,26 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
-	"github.com/robin-vidal/neetrack/internal/catalog"
+	"github.com/open-spaced-repetition/go-fsrs/v3"
+
+	"github.com/robin-vidal/neetrack/internal/scheduler"
 )
 
 func TestHandleCatalog(t *testing.T) {
 	srv, _ := newTestServer(t)
-	srv.catalog = fakeCatalog{
-		patterns: []string{"Arrays & Hashing", "Two Pointers"},
-		byPattern: map[string][]catalog.Problem{
-			"Arrays & Hashing": {
-				{Slug: "two-sum", Title: "Two Sum", Pattern: "Arrays & Hashing", Difficulty: catalog.Easy, Order: 0},
-				{Slug: "group-anagrams", Title: "Group Anagrams", Pattern: "Arrays & Hashing", Difficulty: catalog.Medium, Order: 1},
-			},
-			"Two Pointers": {
-				{Slug: "3sum", Title: "3Sum", Pattern: "Two Pointers", Difficulty: catalog.Medium, Order: 100},
-			},
-		},
+
+	now := time.Now()
+	dueCard := scheduler.Card{Pattern: "Arrays & Hashing"}
+	dueCard.Stability = 5
+	dueCard.State = fsrs.Review
+	dueCard.LastReview = now.AddDate(0, 0, -30)
+	dueCard.Due = now.AddDate(0, 0, -1)
+
+	srv.store = fakeStore{
+		cards:      []scheduler.Card{dueCard},
+		doneCounts: map[string]int{"Arrays & Hashing": 3},
 	}
 
 	loginRec := doLogin(t, srv, "robin", "s3cret")
@@ -44,19 +47,44 @@ func TestHandleCatalog(t *testing.T) {
 		t.Fatalf("decoding response body: %v", err)
 	}
 
-	if len(body.Patterns) != 2 {
-		t.Fatalf("len(Patterns) = %d, want 2", len(body.Patterns))
+	if len(body.Patterns) != 18 {
+		t.Fatalf("len(Patterns) = %d, want 18", len(body.Patterns))
 	}
 
-	want := []patternProgress{
-		{Name: "Arrays & Hashing", Total: 2, Done: 0, Due: false, Retrievability: nil},
-		{Name: "Two Pointers", Total: 1, Done: 0, Due: false, Retrievability: nil},
-	}
-	for i, w := range want {
-		got := body.Patterns[i]
-		if got.Name != w.Name || got.Total != w.Total || got.Done != w.Done || got.Due != w.Due || got.Retrievability != nil {
-			t.Errorf("Patterns[%d] = %+v, want %+v", i, got, w)
+	var arraysHashing, twoPointers *patternProgress
+	for i := range body.Patterns {
+		switch body.Patterns[i].Name {
+		case "Arrays & Hashing":
+			arraysHashing = &body.Patterns[i]
+		case "Two Pointers":
+			twoPointers = &body.Patterns[i]
 		}
+	}
+	if arraysHashing == nil || twoPointers == nil {
+		t.Fatalf("missing expected patterns in response: %+v", body.Patterns)
+	}
+
+	if arraysHashing.Total != 9 {
+		t.Errorf("Arrays & Hashing Total = %d, want 9", arraysHashing.Total)
+	}
+	if arraysHashing.Done != 3 {
+		t.Errorf("Arrays & Hashing Done = %d, want 3", arraysHashing.Done)
+	}
+	if !arraysHashing.Due {
+		t.Errorf("Arrays & Hashing Due = false, want true (card is overdue)")
+	}
+	if arraysHashing.Retrievability == nil {
+		t.Errorf("Arrays & Hashing Retrievability = nil, want a value (card exists)")
+	}
+
+	if twoPointers.Done != 0 {
+		t.Errorf("Two Pointers Done = %d, want 0", twoPointers.Done)
+	}
+	if twoPointers.Due {
+		t.Errorf("Two Pointers Due = true, want false (no card)")
+	}
+	if twoPointers.Retrievability != nil {
+		t.Errorf("Two Pointers Retrievability = %v, want nil (no card)", *twoPointers.Retrievability)
 	}
 }
 

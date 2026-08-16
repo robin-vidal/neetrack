@@ -8,35 +8,35 @@ import (
 
 	"github.com/robin-vidal/neetrack/internal/auth"
 	"github.com/robin-vidal/neetrack/internal/catalog"
+	"github.com/robin-vidal/neetrack/internal/scheduler"
+	"github.com/robin-vidal/neetrack/internal/store"
 )
 
-// Pinger reports whether a dependency the server relies on is reachable.
-type Pinger interface {
+// Store is what handlers need from the persistence layer.
+type Store interface {
 	Ping(ctx context.Context) error
-}
-
-// CatalogSource is the embedded problem roadmap.
-type CatalogSource interface {
-	Patterns() []string
-	ByPattern(name string) []catalog.Problem
+	PatternCards(ctx context.Context, userID int64) ([]scheduler.Card, error)
+	AttemptIndex(ctx context.Context, userID int64) (scheduler.AttemptIndex, error)
+	DoneCounts(ctx context.Context, userID int64) (map[string]int, error)
+	RecordAttempt(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error)
 }
 
 // Server holds the dependencies handlers need, passed in explicitly by main.
 type Server struct {
 	logger       *slog.Logger
-	db           Pinger
+	store        Store
 	auth         *auth.Service
-	catalog      CatalogSource
+	catalog      *catalog.Catalog
 	loginLimiter *ipRateLimiter
 }
 
 // New builds a Server ready to have its Routes mounted.
-func New(logger *slog.Logger, db Pinger, authService *auth.Service, catalogSource CatalogSource) *Server {
+func New(logger *slog.Logger, dataStore Store, authService *auth.Service, cat *catalog.Catalog) *Server {
 	return &Server{
 		logger:       logger,
-		db:           db,
+		store:        dataStore,
 		auth:         authService,
-		catalog:      catalogSource,
+		catalog:      cat,
 		loginLimiter: newIPRateLimiter(),
 	}
 }
@@ -49,5 +49,7 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.HandleFunc("POST /api/logout", s.handleLogout)
 	mux.Handle("GET /api/me", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleMe)))
 	mux.Handle("GET /api/catalog", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleCatalog)))
+	mux.Handle("POST /api/sessions", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleComposeSession)))
+	mux.Handle("POST /api/attempts", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleCreateAttempt)))
 	return mux
 }

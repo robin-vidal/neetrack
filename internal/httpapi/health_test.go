@@ -13,14 +13,41 @@ import (
 
 	"github.com/robin-vidal/neetrack/internal/auth"
 	"github.com/robin-vidal/neetrack/internal/catalog"
+	"github.com/robin-vidal/neetrack/internal/scheduler"
+	"github.com/robin-vidal/neetrack/internal/store"
 )
 
-type fakePinger struct {
-	err error
+// fakeStore is a minimal, in-memory Store used by handler tests. Fields left
+// nil behave as an empty store: no cards, no attempts, nothing due.
+type fakeStore struct {
+	pingErr       error
+	cards         []scheduler.Card
+	attemptIndex  scheduler.AttemptIndex
+	doneCounts    map[string]int
+	recordAttempt func(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error)
 }
 
-func (f fakePinger) Ping(ctx context.Context) error {
-	return f.err
+func (f fakeStore) Ping(ctx context.Context) error {
+	return f.pingErr
+}
+
+func (f fakeStore) PatternCards(ctx context.Context, userID int64) ([]scheduler.Card, error) {
+	return f.cards, nil
+}
+
+func (f fakeStore) AttemptIndex(ctx context.Context, userID int64) (scheduler.AttemptIndex, error) {
+	return f.attemptIndex, nil
+}
+
+func (f fakeStore) DoneCounts(ctx context.Context, userID int64) (map[string]int, error) {
+	return f.doneCounts, nil
+}
+
+func (f fakeStore) RecordAttempt(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error) {
+	if f.recordAttempt != nil {
+		return f.recordAttempt(ctx, p)
+	}
+	return store.AttemptResult{}, nil
 }
 
 type emptyAuthStore struct{}
@@ -49,17 +76,13 @@ func newTestAuthService() *auth.Service {
 	return auth.NewService(emptyAuthStore{}, emptyAuthStore{}, false)
 }
 
-type fakeCatalog struct {
-	patterns  []string
-	byPattern map[string][]catalog.Problem
-}
-
-func (c fakeCatalog) Patterns() []string {
-	return c.patterns
-}
-
-func (c fakeCatalog) ByPattern(name string) []catalog.Problem {
-	return c.byPattern[name]
+func testCatalog(t *testing.T) *catalog.Catalog {
+	t.Helper()
+	cat, err := catalog.Load()
+	if err != nil {
+		t.Fatalf("catalog.Load() error: %v", err)
+	}
+	return cat
 }
 
 func TestHandleHealth(t *testing.T) {
@@ -86,7 +109,7 @@ func TestHandleHealth(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-			srv := New(logger, fakePinger{err: tt.pingErr}, newTestAuthService(), fakeCatalog{})
+			srv := New(logger, fakeStore{pingErr: tt.pingErr}, newTestAuthService(), testCatalog(t))
 
 			req := httptest.NewRequest(http.MethodGet, "/api/health", nil)
 			rec := httptest.NewRecorder()

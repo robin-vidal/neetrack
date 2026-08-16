@@ -15,7 +15,7 @@ type errorResponse struct {
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
-	if err := s.db.Ping(r.Context()); err != nil {
+	if err := s.store.Ping(r.Context()); err != nil {
 		s.logger.ErrorContext(r.Context(), "health check failed", "error", err)
 		writeJSON(w, http.StatusServiceUnavailable, errorResponse{
 			Error:   "database_unreachable",
