@@ -63,3 +63,15 @@ export interface CreateAttemptResponse {
   next_due_at: string;
   interval_days: number;
 }
+
+/** ActivityDay mirrors one entry of the GET /api/activity response. */
+export interface ActivityDay {
+  date: string;
+  count: number;
+}
+
+/** ActivityResponse mirrors the GET /api/activity response. */
+export interface ActivityResponse {
+  days: ActivityDay[];
+  streak: number;
+}

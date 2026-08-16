@@ -1,8 +1,10 @@
 import { useState, type ReactNode } from "react";
 
 import type { Me } from "../../types";
+import { Heatmap } from "./Heatmap";
 import { PatternsList } from "./PatternsList";
 import { Session } from "./Session";
+import { StatsRow } from "./StatsRow";
 import "./tracker.css";
 
 interface TrackerProps {
@@ -12,7 +14,8 @@ interface TrackerProps {
 
 type Tab = "patterns" | "session";
 
-/** Tracker renders the authenticated shell: header, tabs, and their content. */
+/** Tracker renders the authenticated shell: header, stats, heatmap, tabs and
+ * their content. */
 export function Tracker({ user, logout }: TrackerProps) {
   const [tab, setTab] = useState<Tab>("patterns");
 
@@ -26,6 +29,9 @@ export function Tracker({ user, logout }: TrackerProps) {
           </div>
           {logout}
         </div>
+
+        <StatsRow />
+        <Heatmap />
 
         <div className="tabs" role="tablist">
           <button className="tab" role="tab" aria-selected={tab === "patterns"} onClick={() => setTab("patterns")}>
