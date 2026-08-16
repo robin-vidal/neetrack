@@ -1,0 +1,8 @@
+FROM golang:1.25-alpine
+
+RUN apk add --no-cache git
+RUN go install github.com/air-verse/air@v1.61.7
+
+WORKDIR /src
+
+CMD ["air", "-c", ".air.toml"]

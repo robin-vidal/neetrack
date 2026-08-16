@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: neetrack
+      POSTGRES_PASSWORD: neetrack
+      POSTGRES_DB: neetrack
+    volumes:
+      - neetrack-dev-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neetrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/src
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://neetrack:neetrack@db:5432/neetrack?sslmode=disable
+      LISTEN_ADDR: ":8080"
+      COOKIE_SECURE: "false"
+      LOG_LEVEL: "DEBUG"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  neetrack-dev-db:

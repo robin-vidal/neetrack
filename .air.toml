@@ -1,0 +1,13 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+cmd = "go build -o ./tmp/neetrack ./cmd/neetrack"
+bin = "./tmp/neetrack"
+include_ext = ["go", "sql"]
+exclude_dir = ["tmp", "web"]
+include_dir = ["cmd", "internal", "migrations"]
+delay = 200
+
+[log]
+time = true
