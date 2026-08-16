@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	ActivityCounts(ctx context.Context, arg ActivityCountsParams) ([]ActivityCountsRow, error)
 	AttemptsByUser(ctx context.Context, userID int64) ([]AttemptsByUserRow, error)
 	CreateAttempt(ctx context.Context, arg CreateAttemptParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) error

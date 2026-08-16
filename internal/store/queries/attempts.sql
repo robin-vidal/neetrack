@@ -19,3 +19,10 @@ SELECT pattern, COUNT(DISTINCT problem_slug) AS done
 FROM attempts
 WHERE user_id = $1 AND rating >= 2
 GROUP BY pattern;
+
+-- name: ActivityCounts :many
+SELECT (created_at AT TIME ZONE 'UTC')::date AS day, COUNT(*) AS count
+FROM attempts
+WHERE user_id = $1 AND created_at >= $2
+GROUP BY day
+ORDER BY day;
