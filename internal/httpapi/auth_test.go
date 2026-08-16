@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/robin-vidal/neetrack/internal/auth"
+	"github.com/robin-vidal/neetrack/internal/store"
 )
 
 type memoryAuthStore struct {
@@ -81,17 +82,26 @@ func (m *memoryAuthStore) DeleteSession(ctx context.Context, hash []byte) error 
 
 func newTestServer(t *testing.T) (*Server, *memoryAuthStore) {
 	t.Helper()
-	store := newMemoryAuthStore()
+	authStore := newMemoryAuthStore()
 	hash, err := auth.HashPassword("s3cret")
 	if err != nil {
 		t.Fatalf("HashPassword() error: %v", err)
 	}
-	store.addUser(1, "robin", hash)
+	authStore.addUser(1, "robin", hash)
 
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-	authService := auth.NewService(store, store, false)
+	authService := auth.NewService(authStore, authStore, false)
 
-	return New(logger, fakeStore{}, authService, testCatalog(t)), store
+	dataStore := fakeStore{
+		settings: store.UserSettings{
+			TargetRetention: 0.90,
+			BlockSize:       4,
+			OpenMax:         1,
+			NewPct:          40,
+			SessionSize:     5,
+		},
+	}
+	return New(logger, dataStore, authService, testCatalog(t)), authStore
 }
 
 func doLogin(t *testing.T, srv *Server, name, password string) *httptest.ResponseRecorder {

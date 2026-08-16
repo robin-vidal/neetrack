@@ -26,6 +26,10 @@ type fakeStore struct {
 	doneCounts     map[string]int
 	recordAttempt  func(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error)
 	activityCounts []store.DayCount
+	settings       store.UserSettings
+	updateSettings func(ctx context.Context, userID int64, settings store.UserSettings) error
+	problemLinks   map[string]string
+	upsertLink     func(ctx context.Context, userID int64, problemSlug, neetcodeSlug string) error
 }
 
 func (f fakeStore) Ping(ctx context.Context) error {
@@ -53,6 +57,28 @@ func (f fakeStore) RecordAttempt(ctx context.Context, p store.AttemptParams) (st
 		return f.recordAttempt(ctx, p)
 	}
 	return store.AttemptResult{}, nil
+}
+
+func (f fakeStore) Settings(ctx context.Context, userID int64) (store.UserSettings, error) {
+	return f.settings, nil
+}
+
+func (f fakeStore) UpdateSettings(ctx context.Context, userID int64, settings store.UserSettings) error {
+	if f.updateSettings != nil {
+		return f.updateSettings(ctx, userID, settings)
+	}
+	return nil
+}
+
+func (f fakeStore) ProblemLinks(ctx context.Context, userID int64) (map[string]string, error) {
+	return f.problemLinks, nil
+}
+
+func (f fakeStore) UpsertProblemLink(ctx context.Context, userID int64, problemSlug, neetcodeSlug string) error {
+	if f.upsertLink != nil {
+		return f.upsertLink(ctx, userID, problemSlug, neetcodeSlug)
+	}
+	return nil
 }
 
 type emptyAuthStore struct{}
