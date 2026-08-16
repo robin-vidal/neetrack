@@ -5,6 +5,7 @@ import (
 	"context"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/robin-vidal/neetrack/internal/auth"
 	"github.com/robin-vidal/neetrack/internal/catalog"
@@ -19,6 +20,7 @@ type Store interface {
 	AttemptIndex(ctx context.Context, userID int64) (scheduler.AttemptIndex, error)
 	DoneCounts(ctx context.Context, userID int64) (map[string]int, error)
 	RecordAttempt(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error)
+	ActivityCounts(ctx context.Context, userID int64, since time.Time) ([]store.DayCount, error)
 }
 
 // Server holds the dependencies handlers need, passed in explicitly by main.
@@ -51,5 +53,6 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.Handle("GET /api/catalog", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleCatalog)))
 	mux.Handle("POST /api/sessions", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleComposeSession)))
 	mux.Handle("POST /api/attempts", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleCreateAttempt)))
+	mux.Handle("GET /api/activity", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleActivity)))
 	return mux
 }
