@@ -12,6 +12,7 @@ type Querier interface {
 	ActivityCounts(ctx context.Context, arg ActivityCountsParams) ([]ActivityCountsRow, error)
 	AttemptsByUser(ctx context.Context, userID int64) ([]AttemptsByUserRow, error)
 	CreateAttempt(ctx context.Context, arg CreateAttemptParams) error
+	CreateDefaultSettings(ctx context.Context, userID int64) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeletePatternCardsByUser(ctx context.Context, userID int64) error
@@ -21,8 +22,12 @@ type Querier interface {
 	LastAttemptPerProblem(ctx context.Context, userID int64) ([]LastAttemptPerProblemRow, error)
 	PatternCardByUserAndPattern(ctx context.Context, arg PatternCardByUserAndPatternParams) (PatternCardByUserAndPatternRow, error)
 	PatternCardsByUser(ctx context.Context, userID int64) ([]PatternCardsByUserRow, error)
+	ProblemLinksByUser(ctx context.Context, userID int64) ([]ProblemLinksByUserRow, error)
 	SessionWithUserByID(ctx context.Context, id []byte) (SessionWithUserByIDRow, error)
+	SettingsByUser(ctx context.Context, userID int64) (SettingsByUserRow, error)
+	UpdateSettings(ctx context.Context, arg UpdateSettingsParams) error
 	UpsertPatternCard(ctx context.Context, arg UpsertPatternCardParams) error
+	UpsertProblemLink(ctx context.Context, arg UpsertProblemLinkParams) error
 	UserByName(ctx context.Context, name string) (User, error)
 }
 
