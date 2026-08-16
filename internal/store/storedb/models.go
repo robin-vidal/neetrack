@@ -32,6 +32,12 @@ type PatternCard struct {
 	State        int16              `json:"state"`
 }
 
+type ProblemLink struct {
+	UserID       int64  `json:"user_id"`
+	ProblemSlug  string `json:"problem_slug"`
+	NeetcodeSlug string `json:"neetcode_slug"`
+}
+
 type Session struct {
 	ID        []byte             `json:"id"`
 	UserID    int64              `json:"user_id"`
@@ -44,4 +50,14 @@ type User struct {
 	Name         string             `json:"name"`
 	PasswordHash string             `json:"password_hash"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
+}
+
+type UserSetting struct {
+	UserID          int64       `json:"user_id"`
+	TargetRetention float64     `json:"target_retention"`
+	TargetDate      pgtype.Date `json:"target_date"`
+	BlockSize       int16       `json:"block_size"`
+	OpenMax         int16       `json:"open_max"`
+	NewPct          int16       `json:"new_pct"`
+	SessionSize     int16       `json:"session_size"`
 }
