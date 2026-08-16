@@ -14,6 +14,7 @@ import (
 	"golang.org/x/term"
 
 	"github.com/robin-vidal/neetrack/internal/auth"
+	"github.com/robin-vidal/neetrack/internal/catalog"
 	"github.com/robin-vidal/neetrack/internal/config"
 	"github.com/robin-vidal/neetrack/internal/httpapi"
 	"github.com/robin-vidal/neetrack/internal/store"
@@ -96,7 +97,12 @@ func serve(cfg config.Config, logger *slog.Logger) error {
 
 	authService := auth.NewService(st, st, cfg.CookieSecure)
 
-	srv := httpapi.New(logger, st, authService)
+	problemCatalog, err := catalog.Load()
+	if err != nil {
+		return fmt.Errorf("loading catalog: %w", err)
+	}
+
+	srv := httpapi.New(logger, st, authService, problemCatalog)
 	httpServer := &http.Server{
 		Addr:    cfg.ListenAddr,
 		Handler: srv.Routes(),

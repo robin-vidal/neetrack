@@ -91,7 +91,7 @@ func newTestServer(t *testing.T) (*Server, *memoryAuthStore) {
 	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
 	authService := auth.NewService(store, store, false)
 
-	return New(logger, fakePinger{}, authService), store
+	return New(logger, fakePinger{}, authService, fakeCatalog{}), store
 }
 
 func doLogin(t *testing.T, srv *Server, name, password string) *httptest.ResponseRecorder {

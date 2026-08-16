@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/robin-vidal/neetrack/internal/auth"
+	"github.com/robin-vidal/neetrack/internal/catalog"
 )
 
 type fakePinger struct {
@@ -48,6 +49,19 @@ func newTestAuthService() *auth.Service {
 	return auth.NewService(emptyAuthStore{}, emptyAuthStore{}, false)
 }
 
+type fakeCatalog struct {
+	patterns  []string
+	byPattern map[string][]catalog.Problem
+}
+
+func (c fakeCatalog) Patterns() []string {
+	return c.patterns
+}
+
+func (c fakeCatalog) ByPattern(name string) []catalog.Problem {
+	return c.byPattern[name]
+}
+
 func TestHandleHealth(t *testing.T) {
 	tests := []struct {
 		name       string
@@ -72,7 +86,7 @@ func TestHandleHealth(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-			srv := New(logger, fakePinger{err: tt.pingErr}, newTestAuthService())
+			srv := New(logger, fakePinger{err: tt.pingErr}, newTestAuthService(), fakeCatalog{})
 
 			req := httptest.NewRequest(http.MethodGet, "/api/health", nil)
 			rec := httptest.NewRecorder()
