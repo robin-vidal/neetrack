@@ -4,6 +4,7 @@ go 1.25.7
 
 require (
 	github.com/jackc/pgx/v5 v5.10.0
+	github.com/open-spaced-repetition/go-fsrs/v3 v3.3.1
 	github.com/pressly/goose/v3 v3.27.3
 	golang.org/x/crypto v0.55.0
 	golang.org/x/term v0.45.0
