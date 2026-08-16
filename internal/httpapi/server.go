@@ -50,5 +50,6 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.Handle("GET /api/me", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleMe)))
 	mux.Handle("GET /api/catalog", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleCatalog)))
 	mux.Handle("POST /api/sessions", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleComposeSession)))
+	mux.Handle("POST /api/attempts", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleCreateAttempt)))
 	return mux
 }
