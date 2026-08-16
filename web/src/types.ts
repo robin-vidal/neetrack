@@ -14,3 +14,17 @@ export interface ApiError {
   error: string;
   message: string;
 }
+
+/** PatternProgress mirrors one entry of the GET /api/catalog response. */
+export interface PatternProgress {
+  name: string;
+  total: number;
+  done: number;
+  due: boolean;
+  retrievability: number | null;
+}
+
+/** CatalogResponse mirrors the GET /api/catalog response. */
+export interface CatalogResponse {
+  patterns: PatternProgress[];
+}

@@ -1,18 +1,8 @@
 import { AuthGate } from "./components/auth/AuthGate";
+import { Tracker } from "./components/tracker/Tracker";
 
 function App() {
-  return (
-    <AuthGate>
-      {({ user, logout }) => (
-        <main>
-          <h1>Neetrack</h1>
-          <p>
-            Connecté en tant que {user.name}. {logout}
-          </p>
-        </main>
-      )}
-    </AuthGate>
-  );
+  return <AuthGate>{({ user, logout }) => <Tracker user={user} logout={logout} />}</AuthGate>;
 }
 
 export default App;

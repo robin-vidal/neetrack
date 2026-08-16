@@ -42,6 +42,13 @@ export function AuthGate({ children }: AuthGateProps) {
       return <LoginScreen onAuthed={refresh} />;
 
     case "in":
-      return <>{children({ user: state.user, logout: <LogoutButton onDone={refresh} /> })}</>;
+      return (
+        <>
+          {children({
+            user: state.user,
+            logout: <LogoutButton onDone={refresh}>{state.user.name}</LogoutButton>,
+          })}
+        </>
+      );
   }
 }
