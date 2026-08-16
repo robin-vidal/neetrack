@@ -20,11 +20,12 @@ import (
 // fakeStore is a minimal, in-memory Store used by handler tests. Fields left
 // nil behave as an empty store: no cards, no attempts, nothing due.
 type fakeStore struct {
-	pingErr       error
-	cards         []scheduler.Card
-	attemptIndex  scheduler.AttemptIndex
-	doneCounts    map[string]int
-	recordAttempt func(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error)
+	pingErr        error
+	cards          []scheduler.Card
+	attemptIndex   scheduler.AttemptIndex
+	doneCounts     map[string]int
+	recordAttempt  func(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error)
+	activityCounts []store.DayCount
 }
 
 func (f fakeStore) Ping(ctx context.Context) error {
@@ -41,6 +42,10 @@ func (f fakeStore) AttemptIndex(ctx context.Context, userID int64) (scheduler.At
 
 func (f fakeStore) DoneCounts(ctx context.Context, userID int64) (map[string]int, error) {
 	return f.doneCounts, nil
+}
+
+func (f fakeStore) ActivityCounts(ctx context.Context, userID int64, since time.Time) ([]store.DayCount, error) {
+	return f.activityCounts, nil
 }
 
 func (f fakeStore) RecordAttempt(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error) {

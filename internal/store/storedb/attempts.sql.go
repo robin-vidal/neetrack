@@ -11,6 +11,44 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const activityCounts = `-- name: ActivityCounts :many
+SELECT (created_at AT TIME ZONE 'UTC')::date AS day, COUNT(*) AS count
+FROM attempts
+WHERE user_id = $1 AND created_at >= $2
+GROUP BY day
+ORDER BY day
+`
+
+type ActivityCountsParams struct {
+	UserID    int64              `json:"user_id"`
+	CreatedAt pgtype.Timestamptz `json:"created_at"`
+}
+
+type ActivityCountsRow struct {
+	Day   pgtype.Date `json:"day"`
+	Count int64       `json:"count"`
+}
+
+func (q *Queries) ActivityCounts(ctx context.Context, arg ActivityCountsParams) ([]ActivityCountsRow, error) {
+	rows, err := q.db.Query(ctx, activityCounts, arg.UserID, arg.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ActivityCountsRow
+	for rows.Next() {
+		var i ActivityCountsRow
+		if err := rows.Scan(&i.Day, &i.Count); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const attemptsByUser = `-- name: AttemptsByUser :many
 SELECT pattern, rating, created_at
 FROM attempts
