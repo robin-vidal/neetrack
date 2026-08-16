@@ -9,6 +9,9 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
+
+	"github.com/robin-vidal/neetrack/internal/auth"
 )
 
 type fakePinger struct {
@@ -17,6 +20,32 @@ type fakePinger struct {
 
 func (f fakePinger) Ping(ctx context.Context) error {
 	return f.err
+}
+
+type emptyAuthStore struct{}
+
+func (emptyAuthStore) UserByName(ctx context.Context, name string) (auth.Credentials, error) {
+	return auth.Credentials{}, auth.ErrUserNotFound
+}
+
+func (emptyAuthStore) CreateSession(ctx context.Context, hash []byte, userID int64, expiresAt time.Time) error {
+	return nil
+}
+
+func (emptyAuthStore) SessionUser(ctx context.Context, hash []byte) (auth.SessionRecord, error) {
+	return auth.SessionRecord{}, auth.ErrSessionNotFound
+}
+
+func (emptyAuthStore) ExtendSession(ctx context.Context, hash []byte, expiresAt time.Time) error {
+	return nil
+}
+
+func (emptyAuthStore) DeleteSession(ctx context.Context, hash []byte) error {
+	return nil
+}
+
+func newTestAuthService() *auth.Service {
+	return auth.NewService(emptyAuthStore{}, emptyAuthStore{}, false)
 }
 
 func TestHandleHealth(t *testing.T) {
@@ -43,7 +72,7 @@ func TestHandleHealth(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			logger := slog.New(slog.NewTextHandler(io.Discard, nil))
-			srv := New(logger, fakePinger{err: tt.pingErr})
+			srv := New(logger, fakePinger{err: tt.pingErr}, newTestAuthService())
 
 			req := httptest.NewRequest(http.MethodGet, "/api/health", nil)
 			rec := httptest.NewRecorder()
