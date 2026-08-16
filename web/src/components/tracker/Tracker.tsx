@@ -1,7 +1,8 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 
 import type { Me } from "../../types";
 import { PatternsList } from "./PatternsList";
+import { Session } from "./Session";
 import "./tracker.css";
 
 interface TrackerProps {
@@ -9,8 +10,12 @@ interface TrackerProps {
   logout: ReactNode;
 }
 
-/** Tracker renders the authenticated shell: header and the patterns roadmap. */
+type Tab = "patterns" | "session";
+
+/** Tracker renders the authenticated shell: header, tabs, and their content. */
 export function Tracker({ user, logout }: TrackerProps) {
+  const [tab, setTab] = useState<Tab>("patterns");
+
   return (
     <div className="nt">
       <div className="wrap">
@@ -22,7 +27,17 @@ export function Tracker({ user, logout }: TrackerProps) {
           {logout}
         </div>
 
-        <PatternsList />
+        <div className="tabs" role="tablist">
+          <button className="tab" role="tab" aria-selected={tab === "patterns"} onClick={() => setTab("patterns")}>
+            Patterns
+          </button>
+          <button className="tab" role="tab" aria-selected={tab === "session"} onClick={() => setTab("session")}>
+            Session
+          </button>
+        </div>
+
+        {tab === "patterns" && <PatternsList />}
+        {tab === "session" && <Session />}
       </div>
     </div>
   );
