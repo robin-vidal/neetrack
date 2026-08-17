@@ -33,7 +33,7 @@ func TestHandleCreateAttempt(t *testing.T) {
 
 	wantDue := time.Now().AddDate(0, 0, 5)
 	srv.store = fakeStore{
-		recordAttempt: func(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error) {
+		recordAttempt: func(_ context.Context, p store.AttemptParams) (store.AttemptResult, error) {
 			if p.Problem.Slug != "two-sum" {
 				t.Errorf("Problem.Slug = %q, want %q", p.Problem.Slug, "two-sum")
 			}
@@ -94,7 +94,7 @@ func TestHandleCreateAttemptUnknownProblem(t *testing.T) {
 func TestHandleCreateAttemptMissingDurationAndRating(t *testing.T) {
 	srv, _ := newTestServer(t)
 	srv.store = fakeStore{
-		recordAttempt: func(ctx context.Context, p store.AttemptParams) (store.AttemptResult, error) {
+		recordAttempt: func(_ context.Context, _ store.AttemptParams) (store.AttemptResult, error) {
 			return store.AttemptResult{}, scheduler.ErrRatingRequired
 		},
 	}

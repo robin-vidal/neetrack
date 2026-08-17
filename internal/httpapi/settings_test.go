@@ -116,7 +116,7 @@ func TestHandlePatchSettings(t *testing.T) {
 			saved := tt.initial
 			srv.store = fakeStore{
 				settings: tt.initial,
-				updateSettings: func(ctx context.Context, userID int64, s store.UserSettings) error {
+				updateSettings: func(_ context.Context, _ int64, s store.UserSettings) error {
 					saved = s
 					return nil
 				},

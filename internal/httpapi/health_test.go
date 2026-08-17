@@ -32,23 +32,23 @@ type fakeStore struct {
 	upsertLink     func(ctx context.Context, userID int64, problemSlug, neetcodeSlug string) error
 }
 
-func (f fakeStore) Ping(ctx context.Context) error {
+func (f fakeStore) Ping(_ context.Context) error {
 	return f.pingErr
 }
 
-func (f fakeStore) PatternCards(ctx context.Context, userID int64) ([]scheduler.Card, error) {
+func (f fakeStore) PatternCards(_ context.Context, _ int64) ([]scheduler.Card, error) {
 	return f.cards, nil
 }
 
-func (f fakeStore) AttemptIndex(ctx context.Context, userID int64) (scheduler.AttemptIndex, error) {
+func (f fakeStore) AttemptIndex(_ context.Context, _ int64) (scheduler.AttemptIndex, error) {
 	return f.attemptIndex, nil
 }
 
-func (f fakeStore) DoneCounts(ctx context.Context, userID int64) (map[string]int, error) {
+func (f fakeStore) DoneCounts(_ context.Context, _ int64) (map[string]int, error) {
 	return f.doneCounts, nil
 }
 
-func (f fakeStore) ActivityCounts(ctx context.Context, userID int64, since time.Time) ([]store.DayCount, error) {
+func (f fakeStore) ActivityCounts(_ context.Context, _ int64, _ time.Time) ([]store.DayCount, error) {
 	return f.activityCounts, nil
 }
 
@@ -59,7 +59,7 @@ func (f fakeStore) RecordAttempt(ctx context.Context, p store.AttemptParams) (st
 	return store.AttemptResult{}, nil
 }
 
-func (f fakeStore) Settings(ctx context.Context, userID int64) (store.UserSettings, error) {
+func (f fakeStore) Settings(_ context.Context, _ int64) (store.UserSettings, error) {
 	return f.settings, nil
 }
 
@@ -70,7 +70,7 @@ func (f fakeStore) UpdateSettings(ctx context.Context, userID int64, settings st
 	return nil
 }
 
-func (f fakeStore) ProblemLinks(ctx context.Context, userID int64) (map[string]string, error) {
+func (f fakeStore) ProblemLinks(_ context.Context, _ int64) (map[string]string, error) {
 	return f.problemLinks, nil
 }
 
@@ -83,23 +83,23 @@ func (f fakeStore) UpsertProblemLink(ctx context.Context, userID int64, problemS
 
 type emptyAuthStore struct{}
 
-func (emptyAuthStore) UserByName(ctx context.Context, name string) (auth.Credentials, error) {
+func (emptyAuthStore) UserByName(_ context.Context, _ string) (auth.Credentials, error) {
 	return auth.Credentials{}, auth.ErrUserNotFound
 }
 
-func (emptyAuthStore) CreateSession(ctx context.Context, hash []byte, userID int64, expiresAt time.Time) error {
+func (emptyAuthStore) CreateSession(_ context.Context, _ []byte, _ int64, _ time.Time) error {
 	return nil
 }
 
-func (emptyAuthStore) SessionUser(ctx context.Context, hash []byte) (auth.SessionRecord, error) {
+func (emptyAuthStore) SessionUser(_ context.Context, _ []byte) (auth.SessionRecord, error) {
 	return auth.SessionRecord{}, auth.ErrSessionNotFound
 }
 
-func (emptyAuthStore) ExtendSession(ctx context.Context, hash []byte, expiresAt time.Time) error {
+func (emptyAuthStore) ExtendSession(_ context.Context, _ []byte, _ time.Time) error {
 	return nil
 }
 
-func (emptyAuthStore) DeleteSession(ctx context.Context, hash []byte) error {
+func (emptyAuthStore) DeleteSession(_ context.Context, _ []byte) error {
 	return nil
 }
 

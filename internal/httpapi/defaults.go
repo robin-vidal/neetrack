@@ -5,12 +5,12 @@ const (
 	maxSessionSize = 20
 )
 
-func clamp(v, min, max int) int {
-	if v < min {
-		return min
+func clamp(v, lo, hi int) int {
+	if v < lo {
+		return lo
 	}
-	if v > max {
-		return max
+	if v > hi {
+		return hi
 	}
 	return v
 }

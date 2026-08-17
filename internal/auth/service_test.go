@@ -28,7 +28,7 @@ func (f *fakeStore) addUser(id int64, name, passwordHash string) {
 	f.names[id] = name
 }
 
-func (f *fakeStore) UserByName(ctx context.Context, name string) (Credentials, error) {
+func (f *fakeStore) UserByName(_ context.Context, name string) (Credentials, error) {
 	c, ok := f.users[name]
 	if !ok {
 		return Credentials{}, ErrUserNotFound
@@ -36,14 +36,14 @@ func (f *fakeStore) UserByName(ctx context.Context, name string) (Credentials, e
 	return c, nil
 }
 
-func (f *fakeStore) CreateSession(ctx context.Context, hash []byte, userID int64, expiresAt time.Time) error {
+func (f *fakeStore) CreateSession(_ context.Context, hash []byte, userID int64, expiresAt time.Time) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.sessions[string(hash)] = SessionRecord{UserID: userID, UserName: f.names[userID], ExpiresAt: expiresAt}
 	return nil
 }
 
-func (f *fakeStore) SessionUser(ctx context.Context, hash []byte) (SessionRecord, error) {
+func (f *fakeStore) SessionUser(_ context.Context, hash []byte) (SessionRecord, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	rec, ok := f.sessions[string(hash)]
@@ -53,7 +53,7 @@ func (f *fakeStore) SessionUser(ctx context.Context, hash []byte) (SessionRecord
 	return rec, nil
 }
 
-func (f *fakeStore) ExtendSession(ctx context.Context, hash []byte, expiresAt time.Time) error {
+func (f *fakeStore) ExtendSession(_ context.Context, hash []byte, expiresAt time.Time) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	rec, ok := f.sessions[string(hash)]
@@ -65,7 +65,7 @@ func (f *fakeStore) ExtendSession(ctx context.Context, hash []byte, expiresAt ti
 	return nil
 }
 
-func (f *fakeStore) DeleteSession(ctx context.Context, hash []byte) error {
+func (f *fakeStore) DeleteSession(_ context.Context, hash []byte) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	delete(f.sessions, string(hash))
