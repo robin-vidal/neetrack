@@ -58,7 +58,7 @@ func (s *Server) handlePatternProblems(w http.ResponseWriter, r *http.Request) {
 
 	resp := make([]patternProblem, len(problems))
 	for i, p := range problems {
-		neetcodeSlug := p.Slug
+		neetcodeSlug := p.NeetcodeSlug
 		if override, ok := links[p.Slug]; ok {
 			neetcodeSlug = override
 		}

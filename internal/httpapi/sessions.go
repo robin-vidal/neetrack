@@ -90,7 +90,7 @@ func (s *Server) handleComposeSession(w http.ResponseWriter, r *http.Request) {
 
 	resp := make([]sessionItem, len(items))
 	for i, it := range items {
-		neetcodeSlug := it.Problem.Slug
+		neetcodeSlug := it.Problem.NeetcodeSlug
 		if override, ok := links[it.Problem.Slug]; ok {
 			neetcodeSlug = override
 		}
