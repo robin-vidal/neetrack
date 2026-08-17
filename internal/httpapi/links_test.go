@@ -14,7 +14,7 @@ func TestHandleUpsertLink(t *testing.T) {
 	var gotUserID int64
 	var gotSlug, gotNeetcode string
 	srv.store = fakeStore{
-		upsertLink: func(ctx context.Context, userID int64, problemSlug, neetcodeSlug string) error {
+		upsertLink: func(_ context.Context, userID int64, problemSlug, neetcodeSlug string) error {
 			gotUserID = userID
 			gotSlug = problemSlug
 			gotNeetcode = neetcodeSlug

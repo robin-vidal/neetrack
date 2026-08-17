@@ -36,7 +36,7 @@ func (m *memoryAuthStore) addUser(id int64, name, passwordHash string) {
 	m.names[id] = name
 }
 
-func (m *memoryAuthStore) UserByName(ctx context.Context, name string) (auth.Credentials, error) {
+func (m *memoryAuthStore) UserByName(_ context.Context, name string) (auth.Credentials, error) {
 	c, ok := m.users[name]
 	if !ok {
 		return auth.Credentials{}, auth.ErrUserNotFound
@@ -44,14 +44,14 @@ func (m *memoryAuthStore) UserByName(ctx context.Context, name string) (auth.Cre
 	return c, nil
 }
 
-func (m *memoryAuthStore) CreateSession(ctx context.Context, hash []byte, userID int64, expiresAt time.Time) error {
+func (m *memoryAuthStore) CreateSession(_ context.Context, hash []byte, userID int64, expiresAt time.Time) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.sessions[string(hash)] = auth.SessionRecord{UserID: userID, UserName: m.names[userID], ExpiresAt: expiresAt}
 	return nil
 }
 
-func (m *memoryAuthStore) SessionUser(ctx context.Context, hash []byte) (auth.SessionRecord, error) {
+func (m *memoryAuthStore) SessionUser(_ context.Context, hash []byte) (auth.SessionRecord, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	rec, ok := m.sessions[string(hash)]
@@ -61,7 +61,7 @@ func (m *memoryAuthStore) SessionUser(ctx context.Context, hash []byte) (auth.Se
 	return rec, nil
 }
 
-func (m *memoryAuthStore) ExtendSession(ctx context.Context, hash []byte, expiresAt time.Time) error {
+func (m *memoryAuthStore) ExtendSession(_ context.Context, hash []byte, expiresAt time.Time) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	rec, ok := m.sessions[string(hash)]
@@ -73,7 +73,7 @@ func (m *memoryAuthStore) ExtendSession(ctx context.Context, hash []byte, expire
 	return nil
 }
 
-func (m *memoryAuthStore) DeleteSession(ctx context.Context, hash []byte) error {
+func (m *memoryAuthStore) DeleteSession(_ context.Context, hash []byte) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	delete(m.sessions, string(hash))

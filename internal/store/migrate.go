@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	_ "github.com/jackc/pgx/v5/stdlib" // registers the "pgx" driver for database/sql, used only by goose
 	"github.com/pressly/goose/v3"
 
 	"github.com/robin-vidal/neetrack/migrations"
