@@ -26,8 +26,10 @@ jobs:
         run: npm ci
         working-directory: web
 
+      # Pinned: "latest" resolves to v2, whose config schema is incompatible
+      # with the v1-style .golangci.yml this repo uses.
       - name: Install golangci-lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)/bin" latest
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v1.64.8
 
       - name: Lint
         run: make lint
