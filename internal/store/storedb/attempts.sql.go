@@ -173,3 +173,45 @@ func (q *Queries) LastAttemptPerProblem(ctx context.Context, userID int64) ([]La
 	}
 	return items, nil
 }
+
+const problemAttemptStats = `-- name: ProblemAttemptStats :many
+SELECT DISTINCT ON (a.problem_slug)
+    a.problem_slug,
+    a.rating AS last_rating,
+    (
+        SELECT COUNT(*)
+        FROM attempts solved
+        WHERE solved.user_id = a.user_id
+          AND solved.problem_slug = a.problem_slug
+          AND solved.rating >= 3
+    )::bigint AS solves
+FROM attempts a
+WHERE a.user_id = $1
+ORDER BY a.problem_slug, a.created_at DESC
+`
+
+type ProblemAttemptStatsRow struct {
+	ProblemSlug string `json:"problem_slug"`
+	LastRating  int16  `json:"last_rating"`
+	Solves      int64  `json:"solves"`
+}
+
+func (q *Queries) ProblemAttemptStats(ctx context.Context, userID int64) ([]ProblemAttemptStatsRow, error) {
+	rows, err := q.db.Query(ctx, problemAttemptStats, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ProblemAttemptStatsRow
+	for rows.Next() {
+		var i ProblemAttemptStatsRow
+		if err := rows.Scan(&i.ProblemSlug, &i.LastRating, &i.Solves); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}

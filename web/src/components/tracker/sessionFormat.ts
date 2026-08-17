@@ -20,6 +20,9 @@ export const FALLBACK_GRADES: Array<[rating: number, label: string, hint: string
   [4, "Immédiat", "approche évidente, zéro hésitation"],
 ];
 
+/** MASTERY_LABEL mirrors internal/scheduler's mastery levels (0..4), for display only. */
+export const MASTERY_LABEL = ["Jamais tenté", "À reprendre", "Vu une fois", "Solide", "Maîtrisé"];
+
 export function mmss(totalSeconds: number): string {
   const minutes = Math.floor(totalSeconds / 60)
     .toString()

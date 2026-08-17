@@ -164,6 +164,22 @@ func (s *Store) Attempts(ctx context.Context, userID int64) ([]scheduler.Attempt
 	return attempts, nil
 }
 
+// ProblemMastery returns each attempted problem's mastery level, keyed by
+// problem slug. Problems never attempted are absent from the map.
+func (s *Store) ProblemMastery(ctx context.Context, userID int64) (map[string]int, error) {
+	rows, err := s.queries.ProblemAttemptStats(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("querying problem attempt stats: %w", err)
+	}
+
+	mastery := make(map[string]int, len(rows))
+	for _, r := range rows {
+		mastery[r.ProblemSlug] = scheduler.Mastery(true, fsrs.Rating(r.LastRating), int(r.Solves))
+	}
+
+	return mastery, nil
+}
+
 // ReplayCards deletes every pattern card belonging to userID and
 // reconstructs them from scratch by replaying the attempts log.
 func (s *Store) ReplayCards(ctx context.Context, userID int64, settings scheduler.Settings) error {

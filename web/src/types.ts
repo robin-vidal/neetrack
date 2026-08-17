@@ -95,3 +95,12 @@ export interface Settings {
 /** PatchSettingsRequest mirrors the PATCH /api/settings request body. Only
  * included fields are updated; target_date accepts "" to clear it. */
 export type PatchSettingsRequest = Partial<Settings>;
+
+/** PatternProblem mirrors one entry of the GET /api/catalog/problems response. */
+export interface PatternProblem {
+  slug: string;
+  title: string;
+  difficulty: Difficulty;
+  neetcode_slug: string;
+  mastery: number;
+}

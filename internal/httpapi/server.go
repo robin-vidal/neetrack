@@ -25,6 +25,7 @@ type Store interface {
 	UpdateSettings(ctx context.Context, userID int64, settings store.UserSettings) error
 	UpsertProblemLink(ctx context.Context, userID int64, problemSlug, neetcodeSlug string) error
 	ProblemLinks(ctx context.Context, userID int64) (map[string]string, error)
+	ProblemMastery(ctx context.Context, userID int64) (map[string]int, error)
 }
 
 // Server holds the dependencies handlers need, passed in explicitly by main.
@@ -55,6 +56,7 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.HandleFunc("POST /api/logout", s.handleLogout)
 	mux.Handle("GET /api/me", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleMe)))
 	mux.Handle("GET /api/catalog", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleCatalog)))
+	mux.Handle("GET /api/catalog/problems", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handlePatternProblems)))
 	mux.Handle("POST /api/sessions", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleComposeSession)))
 	mux.Handle("POST /api/attempts", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleCreateAttempt)))
 	mux.Handle("GET /api/activity", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleActivity)))

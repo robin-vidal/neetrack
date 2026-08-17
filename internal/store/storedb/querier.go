@@ -22,6 +22,7 @@ type Querier interface {
 	LastAttemptPerProblem(ctx context.Context, userID int64) ([]LastAttemptPerProblemRow, error)
 	PatternCardByUserAndPattern(ctx context.Context, arg PatternCardByUserAndPatternParams) (PatternCardByUserAndPatternRow, error)
 	PatternCardsByUser(ctx context.Context, userID int64) ([]PatternCardsByUserRow, error)
+	ProblemAttemptStats(ctx context.Context, userID int64) ([]ProblemAttemptStatsRow, error)
 	ProblemLinksByUser(ctx context.Context, userID int64) ([]ProblemLinksByUserRow, error)
 	SessionWithUserByID(ctx context.Context, id []byte) (SessionWithUserByIDRow, error)
 	SettingsByUser(ctx context.Context, userID int64) (SettingsByUserRow, error)
