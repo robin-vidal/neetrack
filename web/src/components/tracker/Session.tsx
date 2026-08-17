@@ -79,6 +79,12 @@ export function Session() {
     setGradedCount((c) => c + 1);
   };
 
+  const handleLinkCorrected = (problemSlug: string, neetcodeSlug: string) => {
+    setItems((prev) =>
+      prev ? prev.map((it) => (it.slug === problemSlug ? { ...it, neetcode_slug: neetcodeSlug } : it)) : prev,
+    );
+  };
+
   return (
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
@@ -90,7 +96,7 @@ export function Session() {
         </button>
       </div>
       {items.map((item) => (
-        <SessionTask key={item.slug} item={item} onGraded={handleGraded} />
+        <SessionTask key={item.slug} item={item} onGraded={handleGraded} onLinkCorrected={handleLinkCorrected} />
       ))}
     </div>
   );

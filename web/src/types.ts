@@ -45,6 +45,7 @@ export interface SessionItem {
   difficulty: Difficulty;
   reason: "review" | "new";
   retrievability: number | null;
+  neetcode_slug: string;
 }
 
 /** CreateAttemptRequest mirrors the POST /api/attempts request body. */
@@ -75,3 +76,22 @@ export interface ActivityResponse {
   days: ActivityDay[];
   streak: number;
 }
+
+/** UpsertLinkRequest mirrors the PUT /api/links/{slug} request body. */
+export interface UpsertLinkRequest {
+  neetcode_slug: string;
+}
+
+/** Settings mirrors the GET /api/settings response. */
+export interface Settings {
+  target_retention: number;
+  target_date: string | null;
+  block_size: number;
+  open_max: number;
+  new_pct: number;
+  session_size: number;
+}
+
+/** PatchSettingsRequest mirrors the PATCH /api/settings request body. Only
+ * included fields are updated; target_date accepts "" to clear it. */
+export type PatchSettingsRequest = Partial<Settings>;
