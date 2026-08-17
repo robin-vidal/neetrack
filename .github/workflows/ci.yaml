@@ -26,10 +26,13 @@ jobs:
         run: npm ci
         working-directory: web
 
-      # Pinned: "latest" resolves to v2, whose config schema is incompatible
-      # with the v1-style .golangci.yml this repo uses.
+      # go install compiles with the runner's own Go toolchain, avoiding the
+      # "built with an older Go" rejection a prebuilt v1.64.8 release binary
+      # hits against go 1.25. "latest" is pinned to v1.x here (Go modules
+      # cannot resolve past v1 without a /v2 import path); golangci-lint v2
+      # changed its config schema and would break this v1-style .golangci.yml.
       - name: Install golangci-lint
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)/bin" v1.64.8
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8
 
       - name: Lint
         run: make lint
