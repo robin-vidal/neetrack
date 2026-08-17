@@ -61,5 +61,6 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.Handle("GET /api/settings", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleGetSettings)))
 	mux.Handle("PATCH /api/settings", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handlePatchSettings)))
 	mux.Handle("PUT /api/links/{slug}", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleUpsertLink)))
+	mux.Handle("GET /", spaHandler())
 	return mux
 }
