@@ -1,0 +1,30 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: neetrack
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: neetrack
+    volumes:
+      - neetrack-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neetrack"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: ghcr.io/robin-vidal/neetrack:${IMAGE_TAG}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://neetrack:${POSTGRES_PASSWORD}@db:5432/neetrack?sslmode=disable
+      LISTEN_ADDR: ":8080"
+      COOKIE_SECURE: "true"
+      LOG_LEVEL: "INFO"
+
+volumes:
+  neetrack-db:
