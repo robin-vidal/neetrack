@@ -21,11 +21,12 @@ const (
 
 // Problem is one entry of the embedded roadmap.
 type Problem struct {
-	Slug       string     `json:"slug"`
-	Title      string     `json:"title"`
-	Pattern    string     `json:"pattern"`
-	Difficulty Difficulty `json:"difficulty"`
-	Order      int        `json:"order"`
+	Slug         string     `json:"slug"`
+	Title        string     `json:"title"`
+	Pattern      string     `json:"pattern"`
+	Difficulty   Difficulty `json:"difficulty"`
+	Order        int        `json:"order"`
+	NeetcodeSlug string     `json:"neetcode_slug"`
 }
 
 // Catalog holds the roadmap's patterns and problems, in roadmap order.

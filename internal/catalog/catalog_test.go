@@ -19,6 +19,7 @@ func TestLoad(t *testing.T) {
 	}
 
 	seenSlugs := make(map[string]bool)
+	seenNeetcodeSlugs := make(map[string]string)
 	var total int
 	for _, pattern := range patterns {
 		byPattern := c.ByPattern(pattern)
@@ -37,6 +38,13 @@ func TestLoad(t *testing.T) {
 			if p.Slug == "" || p.Title == "" {
 				t.Errorf("problem with empty slug or title: %+v", p)
 			}
+			if p.NeetcodeSlug == "" {
+				t.Errorf("problem %q has empty NeetcodeSlug", p.Slug)
+			}
+			if other, dup := seenNeetcodeSlugs[p.NeetcodeSlug]; dup {
+				t.Errorf("neetcode_slug %q used by both %q and %q", p.NeetcodeSlug, other, p.Slug)
+			}
+			seenNeetcodeSlugs[p.NeetcodeSlug] = p.Slug
 			switch p.Difficulty {
 			case Easy, Medium, Hard:
 			default:
@@ -73,6 +81,9 @@ func TestBySlug(t *testing.T) {
 	}
 	if p.Title != "Two Sum" {
 		t.Errorf("BySlug(%q).Title = %q, want %q", "two-sum", p.Title, "Two Sum")
+	}
+	if p.NeetcodeSlug != "two-integer-sum" {
+		t.Errorf("BySlug(%q).NeetcodeSlug = %q, want %q", "two-sum", p.NeetcodeSlug, "two-integer-sum")
 	}
 
 	if _, ok := c.BySlug("does-not-exist"); ok {
