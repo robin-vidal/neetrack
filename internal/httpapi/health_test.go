@@ -30,6 +30,7 @@ type fakeStore struct {
 	updateSettings func(ctx context.Context, userID int64, settings store.UserSettings) error
 	problemLinks   map[string]string
 	upsertLink     func(ctx context.Context, userID int64, problemSlug, neetcodeSlug string) error
+	problemMastery map[string]int
 }
 
 func (f fakeStore) Ping(_ context.Context) error {
@@ -79,6 +80,10 @@ func (f fakeStore) UpsertProblemLink(ctx context.Context, userID int64, problemS
 		return f.upsertLink(ctx, userID, problemSlug, neetcodeSlug)
 	}
 	return nil
+}
+
+func (f fakeStore) ProblemMastery(_ context.Context, _ int64) (map[string]int, error) {
+	return f.problemMastery, nil
 }
 
 type emptyAuthStore struct{}
