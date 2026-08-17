@@ -45,6 +45,7 @@ export interface SessionItem {
   difficulty: Difficulty;
   reason: "review" | "new";
   retrievability: number | null;
+  neetcode_slug: string;
 }
 
 /** CreateAttemptRequest mirrors the POST /api/attempts request body. */
@@ -74,4 +75,9 @@ export interface ActivityDay {
 export interface ActivityResponse {
   days: ActivityDay[];
   streak: number;
+}
+
+/** UpsertLinkRequest mirrors the PUT /api/links/{slug} request body. */
+export interface UpsertLinkRequest {
+  neetcode_slug: string;
 }

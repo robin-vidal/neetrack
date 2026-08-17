@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 
 import { AttemptError, submitAttempt } from "../../api/attempts";
 import type { CreateAttemptResponse, SessionItem } from "../../types";
+import { LinkEditModal } from "./LinkEditModal";
 import { DIFF_LABEL, FALLBACK_GRADES, TARGET_SECONDS, leetcodeUrl, mmss, neetcodeUrl } from "./sessionFormat";
 
 interface SessionTaskProps {
   item: SessionItem;
   onGraded: (result: CreateAttemptResponse) => void;
+  onLinkCorrected: (problemSlug: string, neetcodeSlug: string) => void;
 }
 
 /** SessionTask runs one problem's timer and submits its attempt. */
-export function SessionTask({ item, onGraded }: SessionTaskProps) {
+export function SessionTask({ item, onGraded, onLinkCorrected }: SessionTaskProps) {
   const [seconds, setSeconds] = useState(0);
   const [running, setRunning] = useState(false);
   const [usedHint, setUsedHint] = useState(false);
@@ -18,6 +20,7 @@ export function SessionTask({ item, onGraded }: SessionTaskProps) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<CreateAttemptResponse | null>(null);
+  const [editingLink, setEditingLink] = useState(false);
 
   useEffect(() => {
     if (!running) return;
@@ -66,17 +69,29 @@ export function SessionTask({ item, onGraded }: SessionTaskProps) {
 
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginTop: 6, flexWrap: "wrap" }}>
         <a
-          href={neetcodeUrl(item.slug)}
+          href={neetcodeUrl(item.neetcode_slug)}
           target="_blank"
           rel="noreferrer"
           style={{ fontSize: 16, fontWeight: 500, color: "inherit" }}
         >
           {item.title} ↗
         </a>
+        <button className="lc" style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }} onClick={() => setEditingLink(true)}>
+          lien
+        </button>
         <a className="lc" href={leetcodeUrl(item.slug)} target="_blank" rel="noreferrer">
           LC
         </a>
       </div>
+
+      {editingLink && (
+        <LinkEditModal
+          problemSlug={item.slug}
+          currentNeetcodeSlug={item.neetcode_slug}
+          onClose={() => setEditingLink(false)}
+          onSaved={(neetcodeSlug) => onLinkCorrected(item.slug, neetcodeSlug)}
+        />
+      )}
 
       {result ? (
         <p className="muted" style={{ margin: "10px 0 0" }}>
