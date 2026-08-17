@@ -26,3 +26,18 @@ FROM attempts
 WHERE user_id = $1 AND created_at >= $2
 GROUP BY day
 ORDER BY day;
+
+-- name: ProblemAttemptStats :many
+SELECT DISTINCT ON (a.problem_slug)
+    a.problem_slug,
+    a.rating AS last_rating,
+    (
+        SELECT COUNT(*)
+        FROM attempts solved
+        WHERE solved.user_id = a.user_id
+          AND solved.problem_slug = a.problem_slug
+          AND solved.rating >= 3
+    )::bigint AS solves
+FROM attempts a
+WHERE a.user_id = $1
+ORDER BY a.problem_slug, a.created_at DESC;
