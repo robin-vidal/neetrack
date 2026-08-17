@@ -1,0 +1,43 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["Release"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Tag de l'image à déployer (ex. sha-abc1234), pour un rollback"
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve image tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ github.event.inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            sha="${{ github.event.workflow_run.head_sha }}"
+            echo "value=sha-${sha:0:7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            set -e
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
+            cd /opt/neetrack
+            echo "IMAGE_TAG=${{ steps.tag.outputs.value }}" > .image
+            docker compose --env-file .env --env-file .image pull
+            docker compose --env-file .env --env-file .image up -d --remove-orphans
+            docker image prune -f
