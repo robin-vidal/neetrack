@@ -25,7 +25,6 @@ export function Tracker({ user, logout }: TrackerProps) {
       <div className="wrap">
         <div className="top">
           <div>
-            <div className="eyebrow">Neetcode 150 · rétention espacée</div>
             <h1>Le suivi de {user.name}</h1>
           </div>
           {logout}

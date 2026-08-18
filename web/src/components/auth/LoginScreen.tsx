@@ -57,7 +57,6 @@ export function LoginScreen({ onAuthed }: LoginScreenProps) {
   return (
     <div className="nt nt-auth">
       <div className="auth-wrap">
-        <div className="eyebrow">Neetcode 150 · rétention espacée</div>
         <h1>Connexion</h1>
         <p className="muted">Ton suivi, tes cartes et ton historique sont liés à ce compte.</p>
 
