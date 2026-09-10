@@ -1,0 +1,6 @@
+apiVersion: v2
+name: neetrack
+description: Neetcode 150 tracker with spaced repetition
+type: application
+version: 0.1.0
+appVersion: "latest"
