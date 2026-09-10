@@ -1,0 +1,30 @@
+image:
+  repository: ghcr.io/robin-vidal/neetrack
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+
+replicaCount: 1
+
+app:
+  listenAddr: ":8080"
+  cookieSecure: "true"
+  logLevel: "INFO"
+
+# DATABASE_URL injected from a Secret.
+# Option 1: provide the URL here — the chart creates the Secret.
+# Option 2: set existingSecret to the name of an existing Secret that
+#            contains a key named DATABASE_URL; databaseUrl is ignored.
+databaseUrl: ""
+existingSecret: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources: {}
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
