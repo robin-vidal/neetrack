@@ -3,7 +3,6 @@ package httpapi
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -52,13 +51,13 @@ func (s *Server) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		writeUserValidationError(w, "Le nom et le mot de passe sont obligatoires.")
 		return
 	}
-	name, err := validateUserName(*body.Name)
-	if err != nil {
-		writeUserValidationError(w, err.Error())
+	name, validationMessage := validateUserName(*body.Name)
+	if validationMessage != "" {
+		writeUserValidationError(w, validationMessage)
 		return
 	}
-	if err := validateUserPassword(*body.Password); err != nil {
-		writeUserValidationError(w, err.Error())
+	if validationMessage := validateUserPassword(*body.Password); validationMessage != "" {
+		writeUserValidationError(w, validationMessage)
 		return
 	}
 	hash, err := auth.HashPassword(*body.Password)
@@ -99,17 +98,17 @@ func (s *Server) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if body.Name != nil {
-		name, err := validateUserName(*body.Name)
-		if err != nil {
-			writeUserValidationError(w, err.Error())
+		name, validationMessage := validateUserName(*body.Name)
+		if validationMessage != "" {
+			writeUserValidationError(w, validationMessage)
 			return
 		}
 		body.Name = &name
 	}
 	var passwordHash *string
 	if body.Password != nil {
-		if err := validateUserPassword(*body.Password); err != nil {
-			writeUserValidationError(w, err.Error())
+		if validationMessage := validateUserPassword(*body.Password); validationMessage != "" {
+			writeUserValidationError(w, validationMessage)
 			return
 		}
 		hash, err := auth.HashPassword(*body.Password)
@@ -179,19 +178,19 @@ func managedUserID(w http.ResponseWriter, r *http.Request) (int64, bool) {
 	return id, true
 }
 
-func validateUserName(value string) (string, error) {
+func validateUserName(value string) (string, string) {
 	name := strings.TrimSpace(value)
 	if name == "" || utf8.RuneCountInString(name) > maxUserNameLength {
-		return "", fmt.Errorf("Le nom doit contenir entre 1 et %d caractères.", maxUserNameLength)
+	return "", "Le nom doit contenir entre 1 et 64 caractères."
 	}
-	return name, nil
+	return name, ""
 }
 
-func validateUserPassword(value string) error {
+func validateUserPassword(value string) string {
 	if utf8.RuneCountInString(value) < minUserPasswordLength {
-		return fmt.Errorf("Le mot de passe doit contenir au moins %d caractères.", minUserPasswordLength)
+		return "Le mot de passe doit contenir au moins 12 caractères."
 	}
-	return nil
+	return ""
 }
 
 func writeUserValidationError(w http.ResponseWriter, message string) {
