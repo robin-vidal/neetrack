@@ -16,6 +16,10 @@ export function AdminDashboard({ user, onReturn, profileMenu }: AdminDashboardPr
   return (
     <div className="nt admin-frame">
       <aside className="admin-sidebar" aria-label="Navigation d'administration">
+        <button type="button" className="admin-return" onClick={onReturn}>
+          <ArrowLeftIcon /><span>Mon suivi</span>
+        </button>
+
         <div className="admin-brand">
           <div className="admin-brand-mark" aria-hidden="true">N</div>
           <div><strong>neetrack</strong><span>ESPACE ADMIN</span></div>
@@ -31,7 +35,6 @@ export function AdminDashboard({ user, onReturn, profileMenu }: AdminDashboardPr
             <span className="admin-initials">{user.name.slice(0, 1).toLocaleUpperCase("fr-FR")}</span>
             <div><strong>{user.name}</strong><span>Administrateur</span></div>
           </div>
-          <button type="button" className="admin-return" onClick={onReturn}><ArrowLeftIcon />Mon suivi</button>
         </div>
       </aside>
 
