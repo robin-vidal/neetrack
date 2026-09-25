@@ -38,7 +38,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "compose.yaml,Caddyfile"
+          source: "compose.yaml,Caddyfile,backup"
           target: "/opt/neetrack"
           strip_components: 0
 
@@ -55,4 +55,7 @@ jobs:
             echo "IMAGE_TAG=${{ steps.tag.outputs.value }}" > .image
             docker compose --env-file .env --env-file .image pull
             docker compose --env-file .env --env-file .image up -d --remove-orphans
+            if [ -f backup.env ]; then
+              docker compose --env-file .env --env-file .image --profile backup up -d --build backup
+            fi
             docker image prune -f

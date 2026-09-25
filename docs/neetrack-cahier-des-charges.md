@@ -452,15 +452,16 @@ Docker interne.
 
 ### 10.5 Sauvegardes
 
-Sans base sauvegardée, tout l'historique de révision disparaît au premier incident disque — et
+Sans base sauvegardée, tout l'historique de révision disparaît au premier incident disque, et
 c'est précisément l'historique qui rend l'état FSRS reconstructible.
 
-- `pg_dump` quotidien via une tâche cron sur l'hôte ou un conteneur `ofelia`, vers
-  `/opt/neetrack/backups/`, rétention 7 jours.
-- Copie hors-site : `restic` ou `rclone` vers un stockage distinct du VPS. Un dump qui vit sur le
-  disque qu'il est censé protéger ne protège rien.
-- Un test de restauration documenté dans le README, à exécuter au moins une fois : restaurer le
-  dump dans une base jetable et vérifier que l'application démarre dessus.
+- Le profil Compose `backup` exécute `pg_dump` chaque jour à 03:17 UTC et au démarrage du
+  conteneur. Il conserve les dumps locaux dans `backups/` pendant 7 jours.
+- Restic chiffre les dumps et les envoie vers un stockage objet hors site. Il conserve 7
+  instantanés quotidiens et supprime les données obsolètes.
+- Les identifiants Restic et du stockage objet vivent dans `backup.env`, jamais dans Git.
+- Un test de restauration documenté dans le README doit être exécuté au moins une fois :
+  restaurer un dump dans une base jetable et vérifier que l'application démarre dessus.
 
 ### 10.6 Durcissement du VPS
 
