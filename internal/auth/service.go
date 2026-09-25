@@ -94,7 +94,7 @@ func (s *Service) Authenticate(ctx context.Context, rawToken string) (User, erro
 		return User{}, fmt.Errorf("extending session: %w", err)
 	}
 
-	return User{ID: record.UserID, Name: record.UserName}, nil
+	return User{ID: record.UserID, Name: record.UserName, IsAdmin: record.IsAdmin}, nil
 }
 
 // ClearCookie returns a cookie that immediately expires the session cookie

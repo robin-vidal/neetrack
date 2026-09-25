@@ -29,7 +29,11 @@ func (s *Store) CreateSession(ctx context.Context, hash []byte, userID int64, ex
 
 // SessionUser implements auth.SessionStore.
 func (s *Store) SessionUser(ctx context.Context, hash []byte) (auth.SessionRecord, error) {
-	row, err := s.queries.SessionWithUserByID(ctx, hash)
+	var row auth.SessionRecord
+	err := s.pool.QueryRow(ctx, `
+		SELECT sessions.user_id, users.name, users.is_admin, sessions.expires_at
+		FROM sessions JOIN users ON users.id = sessions.user_id
+		WHERE sessions.id = $1`, hash).Scan(&row.UserID, &row.UserName, &row.IsAdmin, &row.ExpiresAt)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return auth.SessionRecord{}, auth.ErrSessionNotFound
 	}
@@ -37,11 +41,7 @@ func (s *Store) SessionUser(ctx context.Context, hash []byte) (auth.SessionRecor
 		return auth.SessionRecord{}, fmt.Errorf("querying session: %w", err)
 	}
 
-	return auth.SessionRecord{
-		UserID:    row.UserID,
-		UserName:  row.UserName,
-		ExpiresAt: row.ExpiresAt.Time,
-	}, nil
+	return row, nil
 }
 
 // ExtendSession implements auth.SessionStore.

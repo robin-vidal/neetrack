@@ -14,7 +14,9 @@ type loginRequest struct {
 }
 
 type meResponse struct {
-	Name string `json:"name"`
+	ID      int64  `json:"id"`
+	Name    string `json:"name"`
+	IsAdmin bool   `json:"is_admin"`
 }
 
 func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
@@ -77,5 +79,5 @@ func (s *Server) handleMe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSON(w, http.StatusOK, meResponse{Name: user.Name})
+	writeJSON(w, http.StatusOK, meResponse{ID: user.ID, Name: user.Name, IsAdmin: user.IsAdmin})
 }

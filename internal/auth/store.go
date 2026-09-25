@@ -15,6 +15,7 @@ type Credentials struct {
 type SessionRecord struct {
 	UserID    int64
 	UserName  string
+	IsAdmin   bool
 	ExpiresAt time.Time
 }
 

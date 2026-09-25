@@ -4,8 +4,9 @@ import "context"
 
 // User is the authenticated identity carried in a request context.
 type User struct {
-	ID   int64
-	Name string
+	ID      int64
+	Name    string
+	IsAdmin bool
 }
 
 type contextKey struct{}

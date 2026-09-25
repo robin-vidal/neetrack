@@ -1,6 +1,16 @@
 /** Me mirrors the GET /api/me response. */
 export interface Me {
+  id: number;
   name: string;
+  is_admin: boolean;
+}
+
+/** ManagedUser mirrors an account summary returned by the admin API. */
+export interface ManagedUser {
+  id: number;
+  name: string;
+  is_admin: boolean;
+  created_at: string;
 }
 
 /** LoginRequest mirrors the POST /api/login request body. */

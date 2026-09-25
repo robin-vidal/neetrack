@@ -86,6 +86,22 @@ func (f fakeStore) ProblemMastery(_ context.Context, _ int64) (map[string]int, e
 	return f.problemMastery, nil
 }
 
+func (fakeStore) AdminUsers(context.Context) ([]store.ManagedUser, error) {
+	return nil, nil
+}
+
+func (fakeStore) CreateManagedUser(context.Context, string, string, bool) (store.ManagedUser, error) {
+	return store.ManagedUser{}, nil
+}
+
+func (fakeStore) UpdateManagedUser(context.Context, int64, *string, *string, *bool) (store.ManagedUser, error) {
+	return store.ManagedUser{}, nil
+}
+
+func (fakeStore) DeleteManagedUser(context.Context, int64) error {
+	return nil
+}
+
 type emptyAuthStore struct{}
 
 func (emptyAuthStore) UserByName(_ context.Context, _ string) (auth.Credentials, error) {
