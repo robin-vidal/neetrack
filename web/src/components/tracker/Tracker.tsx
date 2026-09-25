@@ -6,19 +6,19 @@ import { PatternsList } from "./PatternsList";
 import { Session } from "./Session";
 import { Settings } from "./Settings";
 import { StatsRow } from "./StatsRow";
-import { UsersPanel } from "./UsersPanel";
 import "./tracker.css";
 
 interface TrackerProps {
   user: Me;
   profileMenu: (onManageUsers: () => void) => ReactNode;
+  onOpenAdmin: () => void;
 }
 
-type Tab = "patterns" | "session" | "settings" | "users";
+type Tab = "patterns" | "session" | "settings";
 
 /** Tracker renders the authenticated shell: header, stats, heatmap, tabs and
  * their content. */
-export function Tracker({ user, profileMenu }: TrackerProps) {
+export function Tracker({ user, profileMenu, onOpenAdmin }: TrackerProps) {
   const [tab, setTab] = useState<Tab>("patterns");
 
   return (
@@ -28,7 +28,7 @@ export function Tracker({ user, profileMenu }: TrackerProps) {
           <div>
             <h1>Le suivi de {user.name}</h1>
           </div>
-          {profileMenu(() => setTab("users"))}
+          {profileMenu(onOpenAdmin)}
         </div>
 
         <StatsRow />
@@ -44,13 +44,11 @@ export function Tracker({ user, profileMenu }: TrackerProps) {
           <button className="tab" role="tab" aria-selected={tab === "settings"} onClick={() => setTab("settings")}>
             Réglages
           </button>
-          {user.is_admin && <button className="tab" role="tab" aria-selected={tab === "users"} onClick={() => setTab("users")}>Utilisateurs</button>}
         </div>
 
         {tab === "patterns" && <PatternsList />}
         {tab === "session" && <Session />}
         {tab === "settings" && <Settings />}
-        {tab === "users" && user.is_admin && <UsersPanel currentUserId={user.id} />}
       </div>
     </div>
   );

@@ -3,12 +3,13 @@ import { useEffect, useRef, type ReactNode } from "react";
 interface ModalProps {
   title: string;
   onClose: () => void;
+  className?: string;
   children: ReactNode;
 }
 
 /** Modal is an accessible dialog: traps Escape, focuses its first control,
  * and exposes role="dialog" with aria-modal for screen readers. */
-export function Modal({ title, onClose, children }: ModalProps) {
+export function Modal({ title, onClose, className, children }: ModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -25,7 +26,7 @@ export function Modal({ title, onClose, children }: ModalProps) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-dialog"
+        className={`modal-dialog ${className ?? ""}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"

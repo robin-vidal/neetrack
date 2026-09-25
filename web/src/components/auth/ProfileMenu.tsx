@@ -49,10 +49,13 @@ export function ProfileMenu({ user, onDone, onManageUsers }: ProfileMenuProps) {
     onManageUsers();
   };
 
+  const initials = user.name.slice(0, 1).toLocaleUpperCase("fr-FR");
+
   return (
     <div className="profile-menu" ref={rootRef}>
       <button className="who" type="button" aria-expanded={open} aria-controls="profile-actions" onClick={() => setOpen((value) => !value)}>
-        <b>{user.name}</b><span aria-hidden="true">⌄</span>
+        <span className="profile-avatar" aria-hidden="true">{initials}</span><b>{user.name}</b>
+        <svg className={`profile-chevron ${open ? "open" : ""}`} viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5.5 7.5 4.5 4.5 4.5-4.5" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" /></svg>
       </button>
       {open && (
         <div className="profile-dropdown" id="profile-actions" aria-label="Menu du profil">
