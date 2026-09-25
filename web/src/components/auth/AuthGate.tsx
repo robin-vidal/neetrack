@@ -4,10 +4,10 @@ import { useSession } from "../../api/useSession";
 import type { Me } from "../../types";
 import "./auth.css";
 import { LoginScreen } from "./LoginScreen";
-import { LogoutButton } from "./LogoutButton";
+import { ProfileMenu } from "./ProfileMenu";
 
 interface AuthGateProps {
-  children: (session: { user: Me; logout: ReactNode }) => ReactNode;
+  children: (session: { user: Me; profileMenu: (onManageUsers: () => void) => ReactNode }) => ReactNode;
 }
 
 /** AuthGate resolves the session and renders the login screen, an
@@ -46,7 +46,7 @@ export function AuthGate({ children }: AuthGateProps) {
         <>
           {children({
             user: state.user,
-            logout: <LogoutButton onDone={refresh}>{state.user.name}</LogoutButton>,
+            profileMenu: (onManageUsers) => <ProfileMenu user={state.user} onDone={refresh} onManageUsers={onManageUsers} />,
           })}
         </>
       );
