@@ -45,5 +45,6 @@ jobs:
 
       - name: Push Helm chart to GHCR
         run: |
+          registry_owner="${GITHUB_REPOSITORY_OWNER,,}"
           helm package helm/neetrack --version "0.1.0-sha-${GITHUB_SHA::7}"
-          helm push neetrack-0.1.0-sha-${GITHUB_SHA::7}.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
+          helm push neetrack-0.1.0-sha-${GITHUB_SHA::7}.tgz "oci://ghcr.io/${registry_owner}/charts"
