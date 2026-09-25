@@ -6,6 +6,7 @@ import { PatternsList } from "./PatternsList";
 import { Session } from "./Session";
 import { Settings } from "./Settings";
 import { StatsRow } from "./StatsRow";
+import { UsersPanel } from "./UsersPanel";
 import "./tracker.css";
 
 interface TrackerProps {
@@ -13,7 +14,7 @@ interface TrackerProps {
   logout: ReactNode;
 }
 
-type Tab = "patterns" | "session" | "settings";
+type Tab = "patterns" | "session" | "settings" | "users";
 
 /** Tracker renders the authenticated shell: header, stats, heatmap, tabs and
  * their content. */
@@ -43,11 +44,13 @@ export function Tracker({ user, logout }: TrackerProps) {
           <button className="tab" role="tab" aria-selected={tab === "settings"} onClick={() => setTab("settings")}>
             Réglages
           </button>
+          {user.is_admin && <button className="tab" role="tab" aria-selected={tab === "users"} onClick={() => setTab("users")}>Utilisateurs</button>}
         </div>
 
         {tab === "patterns" && <PatternsList />}
         {tab === "session" && <Session />}
         {tab === "settings" && <Settings />}
+        {tab === "users" && user.is_admin && <UsersPanel currentUserId={user.id} />}
       </div>
     </div>
   );
