@@ -31,7 +31,7 @@ export function AdminDashboard({ user, onReturn, profileMenu }: AdminDashboardPr
             <span className="admin-initials">{user.name.slice(0, 1).toLocaleUpperCase("fr-FR")}</span>
             <div><strong>{user.name}</strong><span>Administrateur</span></div>
           </div>
-          <button type="button" className="admin-return" onClick={onReturn}><ArrowLeftIcon />Retour au suivi</button>
+          <button type="button" className="admin-return" onClick={onReturn}><ArrowLeftIcon />Mon suivi</button>
         </div>
       </aside>
 

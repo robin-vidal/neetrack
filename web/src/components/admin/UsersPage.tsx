@@ -101,7 +101,6 @@ export function UsersPage({ currentUserId }: UsersPageProps) {
         <div>
           <p className="admin-eyebrow">ACCÈS <span>/</span> COMPTES</p>
           <h1 id="admin-users-title">Utilisateurs</h1>
-          <p className="admin-page-description">Crée les comptes et contrôle qui peut administrer Neetrack.</p>
         </div>
         <button type="button" className="admin-primary-button" onClick={() => { setError(null); setDialog({ mode: "create" }); }}>
           <PlusIcon />Nouvel utilisateur
