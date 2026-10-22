@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	ActivityCounts(ctx context.Context, arg ActivityCountsParams) ([]ActivityCountsRow, error)
+	AttemptLogByUser(ctx context.Context, userID int64) ([]AttemptLogByUserRow, error)
 	AttemptsByUser(ctx context.Context, userID int64) ([]AttemptsByUserRow, error)
 	CreateAttempt(ctx context.Context, arg CreateAttemptParams) error
 	CreateDefaultSettings(ctx context.Context, userID int64) error

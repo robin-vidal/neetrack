@@ -12,6 +12,7 @@ import (
 
 	"github.com/robin-vidal/neetrack/internal/catalog"
 	"github.com/robin-vidal/neetrack/internal/scheduler"
+	"github.com/robin-vidal/neetrack/internal/stats"
 	"github.com/robin-vidal/neetrack/internal/store/storedb"
 )
 
@@ -158,6 +159,30 @@ func (s *Store) Attempts(ctx context.Context, userID int64) ([]scheduler.Attempt
 			Pattern:   r.Pattern,
 			Rating:    fsrs.Rating(r.Rating),
 			CreatedAt: r.CreatedAt.Time,
+		}
+	}
+
+	return attempts, nil
+}
+
+// AttemptLog returns every attempt belonging to userID, oldest first, for
+// statistics.
+func (s *Store) AttemptLog(ctx context.Context, userID int64) ([]stats.Attempt, error) {
+	rows, err := s.queries.AttemptLogByUser(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("querying attempt log: %w", err)
+	}
+
+	attempts := make([]stats.Attempt, len(rows))
+	for i, r := range rows {
+		attempts[i] = stats.Attempt{
+			ProblemSlug: r.ProblemSlug,
+			Pattern:     r.Pattern,
+			Rating:      fsrs.Rating(r.Rating),
+			Duration:    time.Duration(r.DurationSeconds.Int32) * time.Second,
+			UsedHint:    r.UsedHint,
+			SawSolution: r.SawSolution,
+			CreatedAt:   r.CreatedAt.Time,
 		}
 	}
 
