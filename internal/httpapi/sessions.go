@@ -81,10 +81,11 @@ func (s *Server) handleComposeSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	req := scheduler.Request{
-		Size:      size,
-		NewPct:    newPct,
-		BlockSize: settings.BlockSize,
-		OpenMax:   settings.OpenMax,
+		Size:        size,
+		NewPct:      newPct,
+		BlockSize:   settings.BlockSize,
+		OpenMax:     settings.OpenMax,
+		ExcludeHard: !settings.IncludeHard,
 	}
 	items := scheduler.Compose(s.catalog, cards, attempts, req, time.Now())
 

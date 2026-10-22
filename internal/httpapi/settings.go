@@ -25,6 +25,7 @@ type settingsResponse struct {
 	OpenMax         int     `json:"open_max"`
 	NewPct          int     `json:"new_pct"`
 	SessionSize     int     `json:"session_size"`
+	IncludeHard     bool    `json:"include_hard"`
 }
 
 func toSettingsResponse(s store.UserSettings) settingsResponse {
@@ -34,6 +35,7 @@ func toSettingsResponse(s store.UserSettings) settingsResponse {
 		OpenMax:         s.OpenMax,
 		NewPct:          s.NewPct,
 		SessionSize:     s.SessionSize,
+		IncludeHard:     s.IncludeHard,
 	}
 	if s.TargetDate != nil {
 		d := s.TargetDate.Format(dateLayout)
@@ -69,6 +71,7 @@ type patchSettingsRequest struct {
 	OpenMax         *int     `json:"open_max"`
 	NewPct          *int     `json:"new_pct"`
 	SessionSize     *int     `json:"session_size"`
+	IncludeHard     *bool    `json:"include_hard"`
 }
 
 func (s *Server) handlePatchSettings(w http.ResponseWriter, r *http.Request) {
@@ -162,6 +165,10 @@ func applySettingsPatch(settings *store.UserSettings, body patchSettingsRequest)
 			return "session_size"
 		}
 		settings.SessionSize = *body.SessionSize
+	}
+
+	if body.IncludeHard != nil {
+		settings.IncludeHard = *body.IncludeHard
 	}
 
 	return ""

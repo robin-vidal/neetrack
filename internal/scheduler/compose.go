@@ -25,10 +25,11 @@ type Item struct {
 
 // Request configures session composition.
 type Request struct {
-	Size      int
-	NewPct    int
-	BlockSize int
-	OpenMax   int
+	Size        int
+	NewPct      int
+	BlockSize   int
+	OpenMax     int
+	ExcludeHard bool
 }
 
 // AttemptIndex maps a problem slug to the time of its most recent attempt.
@@ -49,6 +50,8 @@ type AttemptIndex map[string]time.Time
 //  5. Any remaining slots are filled with further reviews, cycling through
 //     the due patterns again.
 //  6. Reviews are sorted before new problems.
+//
+// When ExcludeHard is set, hard problems are never picked, for review or new.
 func Compose(cat *catalog.Catalog, cards []Card, attempts AttemptIndex, req Request, now time.Time) []Item {
 	cardByPattern := make(map[string]Card, len(cards))
 	for _, c := range cards {
@@ -58,6 +61,9 @@ func Compose(cat *catalog.Catalog, cards []Card, attempts AttemptIndex, req Requ
 	due := dueByRetrievability(cards, now)
 
 	used := make(map[string]bool)
+	if req.ExcludeHard {
+		markHardUsed(cat, used)
+	}
 	var items []Item
 
 	reviewQuota := 0
@@ -90,6 +96,14 @@ func Compose(cat *catalog.Catalog, cards []Card, attempts AttemptIndex, req Requ
 	})
 
 	return items
+}
+
+func markHardUsed(cat *catalog.Catalog, used map[string]bool) {
+	for _, p := range cat.Problems() {
+		if p.Difficulty == catalog.Hard {
+			used[p.Slug] = true
+		}
+	}
 }
 
 type duePattern struct {

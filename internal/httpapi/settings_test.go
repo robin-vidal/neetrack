@@ -20,6 +20,7 @@ func TestHandleGetSettings(t *testing.T) {
 			OpenMax:         1,
 			NewPct:          40,
 			SessionSize:     5,
+			IncludeHard:     true,
 		},
 	}
 
@@ -40,6 +41,9 @@ func TestHandleGetSettings(t *testing.T) {
 	}
 	if body.TargetDate != nil {
 		t.Errorf("TargetDate = %v, want nil", *body.TargetDate)
+	}
+	if !body.IncludeHard {
+		t.Errorf("IncludeHard = false, want true")
 	}
 }
 
@@ -87,6 +91,28 @@ func TestHandlePatchSettings(t *testing.T) {
 			check: func(t *testing.T, got store.UserSettings) {
 				if got.TargetDate != nil {
 					t.Errorf("TargetDate = %v, want nil", got.TargetDate)
+				}
+			},
+		},
+		{
+			name:       "disables hard problems",
+			initial:    store.UserSettings{TargetRetention: 0.9, BlockSize: 4, OpenMax: 1, NewPct: 40, SessionSize: 5, IncludeHard: true},
+			patch:      map[string]any{"include_hard": false},
+			wantStatus: http.StatusOK,
+			check: func(t *testing.T, got store.UserSettings) {
+				if got.IncludeHard {
+					t.Errorf("IncludeHard = true, want false")
+				}
+			},
+		},
+		{
+			name:       "leaves include hard untouched when absent",
+			initial:    store.UserSettings{TargetRetention: 0.9, BlockSize: 4, OpenMax: 1, NewPct: 40, SessionSize: 5, IncludeHard: true},
+			patch:      map[string]any{"block_size": 3},
+			wantStatus: http.StatusOK,
+			check: func(t *testing.T, got store.UserSettings) {
+				if !got.IncludeHard {
+					t.Errorf("IncludeHard = false, want unchanged true")
 				}
 			},
 		},
