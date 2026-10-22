@@ -99,6 +99,7 @@ func newTestServer(t *testing.T) (*Server, *memoryAuthStore) {
 			OpenMax:         1,
 			NewPct:          40,
 			SessionSize:     5,
+			IncludeHard:     true,
 		},
 	}
 	return New(logger, dataStore, authService, testCatalog(t)), authStore
