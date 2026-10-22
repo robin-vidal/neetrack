@@ -231,3 +231,64 @@ func TestComposeUnattemptedPreferredOverLeastRecent(t *testing.T) {
 		t.Errorf("picked %q, want the unattempted problem %q", items[0].Problem.Slug, untouched)
 	}
 }
+
+func TestComposeExcludeHardSkipsNewHardProblems(t *testing.T) {
+	cat := testCatalog(t)
+	now := time.Now()
+
+	tests := []struct {
+		name        string
+		excludeHard bool
+		wantHard    bool
+	}{
+		{name: "hard included by default", excludeHard: false, wantHard: true},
+		{name: "hard excluded", excludeHard: true, wantHard: false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req := Request{Size: 20, NewPct: 100, BlockSize: 6, OpenMax: 3, ExcludeHard: tt.excludeHard}
+			items := Compose(cat, nil, nil, req, now)
+
+			gotHard := false
+			for _, it := range items {
+				if it.Problem.Difficulty == catalog.Hard {
+					gotHard = true
+				}
+			}
+			if gotHard != tt.wantHard {
+				t.Errorf("session contains hard = %v, want %v", gotHard, tt.wantHard)
+			}
+		})
+	}
+}
+
+func TestComposeExcludeHardSkipsHardReviews(t *testing.T) {
+	cat := testCatalog(t)
+	now := time.Now()
+
+	pattern := "Sliding Window"
+	cards := []Card{dueCard(pattern, now)}
+
+	// Attempt every non-hard problem, so without the flag the review would
+	// pick an unattempted hard problem.
+	attempts := AttemptIndex{}
+	var oldest string
+	for i, p := range cat.ByPattern(pattern) {
+		if p.Difficulty == catalog.Hard {
+			continue
+		}
+		attempts[p.Slug] = now.Add(-time.Duration(i+1) * time.Hour)
+		oldest = p.Slug
+	}
+
+	req := Request{Size: 1, NewPct: 0, BlockSize: 4, OpenMax: 1, ExcludeHard: true}
+	items := Compose(cat, cards, attempts, req, now)
+
+	if len(items) != 1 {
+		t.Fatalf("len(items) = %d, want 1", len(items))
+	}
+	if items[0].Problem.Slug != oldest {
+		t.Errorf("picked %q, want least recently attempted non-hard problem %q", items[0].Problem.Slug, oldest)
+	}
+}
