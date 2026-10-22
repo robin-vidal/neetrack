@@ -104,3 +104,69 @@ export interface PatternProblem {
   neetcode_slug: string;
   mastery: number;
 }
+
+/** StatsOverview mirrors the overview block of the GET /api/stats response. */
+export interface StatsOverview {
+  attempts: number;
+  problems_attempted: number;
+  problems_solved: number;
+  total_seconds: number;
+  average_seconds: number;
+  success_rate: number;
+  hint_rate: number;
+  solution_rate: number;
+  active_days: number;
+  longest_streak: number;
+}
+
+/** StatsRatings mirrors the per-rating attempt counts of GET /api/stats. */
+export interface StatsRatings {
+  again: number;
+  hard: number;
+  good: number;
+  easy: number;
+}
+
+/** StatsDifficulty mirrors one entry of by_difficulty in GET /api/stats. */
+export interface StatsDifficulty {
+  difficulty: Difficulty;
+  target_seconds: number;
+  attempts: number;
+  average_seconds: number;
+  success_rate: number;
+}
+
+/** StatsPattern mirrors one entry of by_pattern in GET /api/stats. */
+export interface StatsPattern {
+  pattern: string;
+  attempts: number;
+  problems_attempted: number;
+  average_rating: number;
+  success_rate: number;
+  average_seconds: number;
+}
+
+/** StatsProblem mirrors one entry of best or worst in GET /api/stats. */
+export interface StatsProblem {
+  slug: string;
+  title: string;
+  pattern: string;
+  difficulty: Difficulty;
+  neetcode_slug: string;
+  attempts: number;
+  average_rating: number;
+  success_rate: number;
+  average_seconds: number;
+  pace: number;
+  last_rating: number;
+}
+
+/** StatsResponse mirrors the GET /api/stats response. */
+export interface StatsResponse {
+  overview: StatsOverview;
+  ratings: StatsRatings;
+  by_difficulty: StatsDifficulty[];
+  by_pattern: StatsPattern[];
+  best: StatsProblem[];
+  worst: StatsProblem[];
+}
