@@ -10,6 +10,7 @@ import (
 	"github.com/robin-vidal/neetrack/internal/auth"
 	"github.com/robin-vidal/neetrack/internal/catalog"
 	"github.com/robin-vidal/neetrack/internal/scheduler"
+	"github.com/robin-vidal/neetrack/internal/stats"
 	"github.com/robin-vidal/neetrack/internal/store"
 )
 
@@ -26,6 +27,7 @@ type Store interface {
 	UpsertProblemLink(ctx context.Context, userID int64, problemSlug, neetcodeSlug string) error
 	ProblemLinks(ctx context.Context, userID int64) (map[string]string, error)
 	ProblemMastery(ctx context.Context, userID int64) (map[string]int, error)
+	AttemptLog(ctx context.Context, userID int64) ([]stats.Attempt, error)
 }
 
 // Server holds the dependencies handlers need, passed in explicitly by main.
@@ -60,6 +62,7 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.Handle("POST /api/sessions", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleComposeSession)))
 	mux.Handle("POST /api/attempts", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleCreateAttempt)))
 	mux.Handle("GET /api/activity", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleActivity)))
+	mux.Handle("GET /api/stats", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleStats)))
 	mux.Handle("GET /api/settings", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleGetSettings)))
 	mux.Handle("PATCH /api/settings", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handlePatchSettings)))
 	mux.Handle("PUT /api/links/{slug}", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleUpsertLink)))

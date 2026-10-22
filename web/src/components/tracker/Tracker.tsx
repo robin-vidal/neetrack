@@ -5,6 +5,7 @@ import { Heatmap } from "./Heatmap";
 import { PatternsList } from "./PatternsList";
 import { Session } from "./Session";
 import { Settings } from "./Settings";
+import { Statistics } from "./Statistics";
 import { StatsRow } from "./StatsRow";
 import "./tracker.css";
 
@@ -13,7 +14,7 @@ interface TrackerProps {
   logout: ReactNode;
 }
 
-type Tab = "patterns" | "session" | "settings";
+type Tab = "patterns" | "session" | "stats" | "settings";
 
 /** Tracker renders the authenticated shell: header, stats, heatmap, tabs and
  * their content. */
@@ -40,6 +41,9 @@ export function Tracker({ user, logout }: TrackerProps) {
           <button className="tab" role="tab" aria-selected={tab === "session"} onClick={() => setTab("session")}>
             Session
           </button>
+          <button className="tab" role="tab" aria-selected={tab === "stats"} onClick={() => setTab("stats")}>
+            Statistiques
+          </button>
           <button className="tab" role="tab" aria-selected={tab === "settings"} onClick={() => setTab("settings")}>
             Réglages
           </button>
@@ -47,6 +51,7 @@ export function Tracker({ user, logout }: TrackerProps) {
 
         {tab === "patterns" && <PatternsList />}
         {tab === "session" && <Session />}
+        {tab === "stats" && <Statistics />}
         {tab === "settings" && <Settings />}
       </div>
     </div>

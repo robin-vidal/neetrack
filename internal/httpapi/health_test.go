@@ -14,6 +14,7 @@ import (
 	"github.com/robin-vidal/neetrack/internal/auth"
 	"github.com/robin-vidal/neetrack/internal/catalog"
 	"github.com/robin-vidal/neetrack/internal/scheduler"
+	"github.com/robin-vidal/neetrack/internal/stats"
 	"github.com/robin-vidal/neetrack/internal/store"
 )
 
@@ -31,6 +32,7 @@ type fakeStore struct {
 	problemLinks   map[string]string
 	upsertLink     func(ctx context.Context, userID int64, problemSlug, neetcodeSlug string) error
 	problemMastery map[string]int
+	attemptLog     []stats.Attempt
 }
 
 func (f fakeStore) Ping(_ context.Context) error {
@@ -84,6 +86,10 @@ func (f fakeStore) UpsertProblemLink(ctx context.Context, userID int64, problemS
 
 func (f fakeStore) ProblemMastery(_ context.Context, _ int64) (map[string]int, error) {
 	return f.problemMastery, nil
+}
+
+func (f fakeStore) AttemptLog(_ context.Context, _ int64) ([]stats.Attempt, error) {
+	return f.attemptLog, nil
 }
 
 type emptyAuthStore struct{}

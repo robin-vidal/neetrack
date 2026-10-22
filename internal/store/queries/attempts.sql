@@ -41,3 +41,13 @@ SELECT DISTINCT ON (a.problem_slug)
 FROM attempts a
 WHERE a.user_id = $1
 ORDER BY a.problem_slug, a.created_at DESC;
+
+-- name: AttemptLogByUser :many
+SELECT problem_slug, pattern, rating, duration_seconds, used_hint, saw_solution, created_at
+FROM attempts
+WHERE user_id = $1
+ORDER BY created_at;
+
+-- name: CreateAttemptAt :exec
+INSERT INTO attempts (user_id, problem_slug, pattern, rating, duration_seconds, used_hint, saw_solution, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8);

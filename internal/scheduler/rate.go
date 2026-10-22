@@ -44,7 +44,7 @@ func Rate(o Outcome) fsrs.Rating {
 		return fsrs.Hard
 	}
 
-	target := targetFor(o.Difficulty)
+	target := TargetFor(o.Difficulty)
 
 	switch {
 	case o.Duration > 2*target:
@@ -73,7 +73,8 @@ func DeriveRating(o Outcome, clientRating *fsrs.Rating) (fsrs.Rating, error) {
 	return *clientRating, nil
 }
 
-func targetFor(d catalog.Difficulty) time.Duration {
+// TargetFor returns the target duration for a problem of difficulty d.
+func TargetFor(d catalog.Difficulty) time.Duration {
 	switch d {
 	case catalog.Easy:
 		return TargetEasy

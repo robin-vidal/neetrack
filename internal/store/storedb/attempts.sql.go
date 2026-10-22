@@ -49,6 +49,51 @@ func (q *Queries) ActivityCounts(ctx context.Context, arg ActivityCountsParams) 
 	return items, nil
 }
 
+const attemptLogByUser = `-- name: AttemptLogByUser :many
+SELECT problem_slug, pattern, rating, duration_seconds, used_hint, saw_solution, created_at
+FROM attempts
+WHERE user_id = $1
+ORDER BY created_at
+`
+
+type AttemptLogByUserRow struct {
+	ProblemSlug     string             `json:"problem_slug"`
+	Pattern         string             `json:"pattern"`
+	Rating          int16              `json:"rating"`
+	DurationSeconds pgtype.Int4        `json:"duration_seconds"`
+	UsedHint        bool               `json:"used_hint"`
+	SawSolution     bool               `json:"saw_solution"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) AttemptLogByUser(ctx context.Context, userID int64) ([]AttemptLogByUserRow, error) {
+	rows, err := q.db.Query(ctx, attemptLogByUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []AttemptLogByUserRow
+	for rows.Next() {
+		var i AttemptLogByUserRow
+		if err := rows.Scan(
+			&i.ProblemSlug,
+			&i.Pattern,
+			&i.Rating,
+			&i.DurationSeconds,
+			&i.UsedHint,
+			&i.SawSolution,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const attemptsByUser = `-- name: AttemptsByUser :many
 SELECT pattern, rating, created_at
 FROM attempts
@@ -106,6 +151,36 @@ func (q *Queries) CreateAttempt(ctx context.Context, arg CreateAttemptParams) er
 		arg.DurationSeconds,
 		arg.UsedHint,
 		arg.SawSolution,
+	)
+	return err
+}
+
+const createAttemptAt = `-- name: CreateAttemptAt :exec
+INSERT INTO attempts (user_id, problem_slug, pattern, rating, duration_seconds, used_hint, saw_solution, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+`
+
+type CreateAttemptAtParams struct {
+	UserID          int64              `json:"user_id"`
+	ProblemSlug     string             `json:"problem_slug"`
+	Pattern         string             `json:"pattern"`
+	Rating          int16              `json:"rating"`
+	DurationSeconds pgtype.Int4        `json:"duration_seconds"`
+	UsedHint        bool               `json:"used_hint"`
+	SawSolution     bool               `json:"saw_solution"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) CreateAttemptAt(ctx context.Context, arg CreateAttemptAtParams) error {
+	_, err := q.db.Exec(ctx, createAttemptAt,
+		arg.UserID,
+		arg.ProblemSlug,
+		arg.Pattern,
+		arg.Rating,
+		arg.DurationSeconds,
+		arg.UsedHint,
+		arg.SawSolution,
+		arg.CreatedAt,
 	)
 	return err
 }
