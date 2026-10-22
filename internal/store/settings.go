@@ -18,6 +18,7 @@ type UserSettings struct {
 	OpenMax         int
 	NewPct          int
 	SessionSize     int
+	IncludeHard     bool
 }
 
 // Settings returns userID's settings.
@@ -33,6 +34,7 @@ func (s *Store) Settings(ctx context.Context, userID int64) (UserSettings, error
 		OpenMax:         int(row.OpenMax),
 		NewPct:          int(row.NewPct),
 		SessionSize:     int(row.SessionSize),
+		IncludeHard:     row.IncludeHard,
 	}
 	if row.TargetDate.Valid {
 		t := row.TargetDate.Time
@@ -57,6 +59,7 @@ func (s *Store) UpdateSettings(ctx context.Context, userID int64, settings UserS
 		OpenMax:         int16(settings.OpenMax),
 		NewPct:          int16(settings.NewPct),
 		SessionSize:     int16(settings.SessionSize),
+		IncludeHard:     settings.IncludeHard,
 	})
 	if err != nil {
 		return fmt.Errorf("updating settings: %w", err)

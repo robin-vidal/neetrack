@@ -60,4 +60,5 @@ type UserSetting struct {
 	OpenMax         int16       `json:"open_max"`
 	NewPct          int16       `json:"new_pct"`
 	SessionSize     int16       `json:"session_size"`
+	IncludeHard     bool        `json:"include_hard"`
 }

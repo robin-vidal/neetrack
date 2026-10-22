@@ -22,7 +22,7 @@ func (q *Queries) CreateDefaultSettings(ctx context.Context, userID int64) error
 }
 
 const settingsByUser = `-- name: SettingsByUser :one
-SELECT target_retention, target_date, block_size, open_max, new_pct, session_size
+SELECT target_retention, target_date, block_size, open_max, new_pct, session_size, include_hard
 FROM user_settings
 WHERE user_id = $1
 `
@@ -34,6 +34,7 @@ type SettingsByUserRow struct {
 	OpenMax         int16       `json:"open_max"`
 	NewPct          int16       `json:"new_pct"`
 	SessionSize     int16       `json:"session_size"`
+	IncludeHard     bool        `json:"include_hard"`
 }
 
 func (q *Queries) SettingsByUser(ctx context.Context, userID int64) (SettingsByUserRow, error) {
@@ -46,6 +47,7 @@ func (q *Queries) SettingsByUser(ctx context.Context, userID int64) (SettingsByU
 		&i.OpenMax,
 		&i.NewPct,
 		&i.SessionSize,
+		&i.IncludeHard,
 	)
 	return i, err
 }
@@ -57,7 +59,8 @@ SET target_retention = $2,
     block_size = $4,
     open_max = $5,
     new_pct = $6,
-    session_size = $7
+    session_size = $7,
+    include_hard = $8
 WHERE user_id = $1
 `
 
@@ -69,6 +72,7 @@ type UpdateSettingsParams struct {
 	OpenMax         int16       `json:"open_max"`
 	NewPct          int16       `json:"new_pct"`
 	SessionSize     int16       `json:"session_size"`
+	IncludeHard     bool        `json:"include_hard"`
 }
 
 func (q *Queries) UpdateSettings(ctx context.Context, arg UpdateSettingsParams) error {
@@ -80,6 +84,7 @@ func (q *Queries) UpdateSettings(ctx context.Context, arg UpdateSettingsParams) 
 		arg.OpenMax,
 		arg.NewPct,
 		arg.SessionSize,
+		arg.IncludeHard,
 	)
 	return err
 }
