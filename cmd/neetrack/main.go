@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	"math/rand/v2"
 	"net/http"
 	"os"
 	"os/signal"
@@ -19,6 +20,7 @@ import (
 	"github.com/robin-vidal/neetrack/internal/config"
 	"github.com/robin-vidal/neetrack/internal/httpapi"
 	"github.com/robin-vidal/neetrack/internal/scheduler"
+	"github.com/robin-vidal/neetrack/internal/seed"
 	"github.com/robin-vidal/neetrack/internal/store"
 )
 
@@ -55,6 +57,8 @@ func run(args []string) error {
 			return addUser(cfg, args[1])
 		case "replay":
 			return replay(cfg, args[1:])
+		case "seed":
+			return seedHistory(cfg, args[1:])
 		}
 	}
 
@@ -125,6 +129,75 @@ func replay(cfg config.Config, args []string) error {
 	}
 
 	fmt.Printf("Cartes reconstruites pour %q.\n", *name)
+	return nil
+}
+
+func seedHistory(cfg config.Config, args []string) error {
+	fs := flag.NewFlagSet("seed", flag.ContinueOnError)
+	name := fs.String("user", "", "name of the user to fill")
+	days := fs.Int("days", 75, "number of days of history to simulate")
+	randSeed := fs.Uint64("seed", 1, "random seed, the same seed gives the same history")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if *name == "" || *days < 1 {
+		return fmt.Errorf("usage: neetrack seed --user=<name> [--days=75] [--seed=1]")
+	}
+
+	cat, err := catalog.Load()
+	if err != nil {
+		return fmt.Errorf("loading catalog: %w", err)
+	}
+
+	ctx := context.Background()
+	st, err := store.New(ctx, cfg.DatabaseURL)
+	if err != nil {
+		return fmt.Errorf("connecting to database: %w", err)
+	}
+	defer st.Close()
+
+	creds, err := st.UserByName(ctx, *name)
+	if err != nil {
+		return fmt.Errorf("looking up user %q: %w", *name, err)
+	}
+
+	existing, err := st.Attempts(ctx, creds.UserID)
+	if err != nil {
+		return fmt.Errorf("checking existing attempts: %w", err)
+	}
+	if len(existing) > 0 {
+		return fmt.Errorf("user %q already has %d attempts, seed only fills an empty history", *name, len(existing))
+	}
+
+	userSettings, err := st.Settings(ctx, creds.UserID)
+	if err != nil {
+		return fmt.Errorf("loading settings for %q: %w", *name, err)
+	}
+
+	generated := seed.Generate(cat, seed.Options{
+		Days:            *days,
+		Now:             time.Now(),
+		TargetRetention: userSettings.TargetRetention,
+		Rand:            rand.New(rand.NewPCG(*randSeed, *randSeed)),
+	})
+
+	attempts := make([]store.LoggedAttempt, len(generated))
+	for i, a := range generated {
+		attempts[i] = store.LoggedAttempt(a)
+	}
+	if err := st.AppendAttempts(ctx, creds.UserID, attempts); err != nil {
+		return fmt.Errorf("writing attempts: %w", err)
+	}
+
+	settings := scheduler.Settings{
+		TargetRetention: userSettings.TargetRetention,
+		TargetDate:      userSettings.TargetDate,
+	}
+	if err := st.ReplayCards(ctx, creds.UserID, settings); err != nil {
+		return fmt.Errorf("replaying attempts: %w", err)
+	}
+
+	fmt.Printf("%d tentatives simulées sur %d jours pour %q.\n", len(attempts), *days, *name)
 	return nil
 }
 
