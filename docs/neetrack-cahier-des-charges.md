@@ -275,7 +275,7 @@ Erreurs : `{"error":"code_machine","message":"phrase lisible"}` avec le bon stat
 |---|---|---|
 | `POST` | `/api/login` | `{name, password}` → 204 + cookie ; 401 sinon |
 | `POST` | `/api/logout` | → 204, session supprimée en base |
-| `GET` | `/api/me` | → `{name}` ou 401 |
+| `GET` | `/api/me` | → `{id, name, is_admin}` ou 401 |
 | `GET` | `/api/catalog` | → patterns + problèmes + progression + rétrievabilité courante |
 | `GET` | `/api/settings` | → réglages |
 | `PATCH` | `/api/settings` | patch partiel des réglages |
@@ -283,6 +283,10 @@ Erreurs : `{"error":"code_machine","message":"phrase lisible"}` avec le bon stat
 | `POST` | `/api/attempts` | `{problem_slug, duration_seconds, used_hint, saw_solution}` → `{rating, pattern, next_due_at, interval_days}` |
 | `GET` | `/api/activity?weeks=26` | → `[{date, count}]` + `{streak}` |
 | `PUT` | `/api/links/{slug}` | `{neetcode_slug}` → 204 |
+| `GET` | `/api/admin/users` | administrateur → `{users}` sans données d'identification |
+| `POST` | `/api/admin/users` | administrateur → création `{name, password, is_admin}` |
+| `PATCH` | `/api/admin/users/{id}` | administrateur → modification partielle du compte |
+| `DELETE` | `/api/admin/users/{id}` | administrateur → suppression du compte et de ses données |
 
 Notes :
 
@@ -308,6 +312,11 @@ Notes :
 - Message d'erreur identique pour identifiant inconnu et mot de passe faux (pas d'énumération).
 - Pas d'inscription publique. Création de compte par CLI : `neetrack adduser <nom>`, mot de passe
   lu sur stdin sans écho. C'est un outil pour deux personnes.
+- Les comptes existants sont gérés dans le panneau Utilisateurs, réservé aux administrateurs.
+  Le premier compte existant devient administrateur par migration ; sur une base vide, le premier
+  compte créé par CLI reçoit ce rôle. Les administrateurs peuvent créer, modifier, promouvoir,
+  rétrograder, réinitialiser le mot de passe et supprimer les comptes. Le dernier administrateur
+  ne peut pas être supprimé ni rétrogradé. Un changement de mot de passe révoque les sessions.
 - Middleware `RequireAuth` qui injecte l'utilisateur dans le `context.Context` via une clé typée
   privée.
 
@@ -443,15 +452,16 @@ Docker interne.
 
 ### 10.5 Sauvegardes
 
-Sans base sauvegardée, tout l'historique de révision disparaît au premier incident disque — et
+Sans base sauvegardée, tout l'historique de révision disparaît au premier incident disque, et
 c'est précisément l'historique qui rend l'état FSRS reconstructible.
 
-- `pg_dump` quotidien via une tâche cron sur l'hôte ou un conteneur `ofelia`, vers
-  `/opt/neetrack/backups/`, rétention 7 jours.
-- Copie hors-site : `restic` ou `rclone` vers un stockage distinct du VPS. Un dump qui vit sur le
-  disque qu'il est censé protéger ne protège rien.
-- Un test de restauration documenté dans le README, à exécuter au moins une fois : restaurer le
-  dump dans une base jetable et vérifier que l'application démarre dessus.
+- Le profil Compose `backup` exécute `pg_dump` chaque jour à 03:17 UTC et au démarrage du
+  conteneur. Il conserve les dumps locaux dans `backups/` pendant 7 jours.
+- Restic chiffre les dumps et les envoie vers un stockage objet hors site. Il conserve 7
+  instantanés quotidiens et supprime les données obsolètes.
+- Les identifiants Restic et du stockage objet vivent dans `backup.env`, jamais dans Git.
+- Un test de restauration documenté dans le README doit être exécuté au moins une fois :
+  restaurer un dump dans une base jetable et vérifier que l'application démarre dessus.
 
 ### 10.6 Durcissement du VPS
 
@@ -496,12 +506,14 @@ Le reste n'a pas de seuil.
 8. **Livraison** — CI sur PR, image GHCR, déploiement SSH, Caddy et TLS, sauvegardes. À faire
    dès que le jalon 4 est vert : déployer tôt une boucle qui marche vaut mieux que déployer tard
    un produit complet.
+9. **Administration** — rôle administrateur, migration additive, API protégée et panneau CRUD
+   des utilisateurs.
 
 ---
 
 ## 13. Hors périmètre
 
-Inscription publique, réinitialisation de mot de passe, OAuth, e-mail, notifications,
+Inscription publique, réinitialisation de mot de passe en libre-service, OAuth, e-mail, notifications,
 classement entre utilisateurs, import LeetCode, mobile natif, i18n (le produit est en français),
 et tout entraînement de paramètres FSRS personnalisés — `go-fsrs` n'embarque pas l'optimiseur, et
 le volume de données d'un utilisateur ne le justifierait pas.
@@ -513,6 +525,8 @@ le volume de données d'un utilisateur ne le justifierait pas.
 - `git clone && make dev` donne une application fonctionnelle sans étape manuelle.
 - Un utilisateur créé par CLI peut se connecter, composer une session de 5, en noter 5, et voir
   les échéances de ses patterns bouger en conséquence.
+- Seuls les administrateurs peuvent gérer les comptes ; aucune réponse de l'API admin ne contient
+  de hash de mot de passe, et le dernier administrateur ne peut pas être supprimé ou rétrogradé.
 - Deux utilisateurs simultanés ne voient jamais les données l'un de l'autre. Un test le vérifie.
 - Supprimer `pattern_cards` et lancer `neetrack replay` reconstruit à l'identique l'état dérivé.
 - `docker compose -f compose.yaml up` démarre un conteneur unique servant l'API et le frontend.

@@ -17,11 +17,23 @@
 .nt .stat span { font-size:11px; letter-spacing:.1em; text-transform:uppercase;
   color:var(--ink-3); font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
 .nt .top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
-.nt .who { background:none; border:1px solid var(--rule); border-radius:999px;
-  padding:6px 14px; font:inherit; font-size:13px; color:var(--ink-2); cursor:pointer;
+.nt .profile-menu { position:relative; flex-shrink:0; }
+.nt .who { display:flex; align-items:center; gap:9px; min-height:40px; background:none; border:1px solid var(--rule); border-radius:999px;
+  padding:4px 11px 4px 5px; font:inherit; font-size:13px; color:var(--ink-2); cursor:pointer;
   white-space:nowrap; flex-shrink:0; }
 .nt .who:hover { border-color:var(--ink); color:var(--ink); }
 .nt .who b { font-weight:500; color:var(--ink); }
+.nt .profile-avatar { display:grid; place-items:center; width:29px; height:29px; border-radius:50%;
+  background:#DDEEE9; color:#155B4C; font-size:12px; font-weight:700; }
+.nt .profile-chevron { width:17px; height:17px; margin-left:1px; color:var(--ink-3); transition:transform .16s ease; }
+.nt .profile-chevron.open { transform:rotate(180deg); }
+.nt .profile-dropdown { position:absolute; top:calc(100% + 8px); right:0; z-index:20; min-width:200px;
+  padding:5px; background:var(--card); border:1px solid var(--rule); border-radius:9px;
+  box-shadow:0 8px 24px rgba(20,28,38,.12); }
+.nt .profile-dropdown button { display:block; width:100%; padding:9px 10px; border:0; border-radius:6px;
+  background:none; color:var(--ink); text-align:left; font:inherit; font-size:13px; cursor:pointer; }
+.nt .profile-dropdown button:hover { background:var(--paper); }
+.nt .profile-dropdown button:disabled { opacity:.55; cursor:wait; }
 .nt .setup { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .nt .setup label { font-size:13px; color:var(--ink-2); min-width:120px; }
 .nt .tabs { display:flex; gap:2px; margin:22px 0 20px; }
@@ -115,6 +127,23 @@
 .nt .grade b { display:block; font-size:13px; font-weight:500; }
 .nt .grade span { font-size:11px; color:var(--ink-3); line-height:1.35; display:block; }
 .nt .muted { color:var(--ink-2); font-size:13px; }
+.nt .users-panel { display:grid; gap:12px; }
+.nt .users-heading h2 { font-size:19px; margin:0; font-weight:600; }
+.nt .users-heading p { margin:3px 0 0; }
+.nt .users-form,.nt .users-edit { display:grid; gap:12px; }
+.nt .users-form h3 { font-size:15px; margin:0; }
+.nt .users-form label,.nt .users-edit label { display:grid; gap:5px; font-size:13px; font-weight:500; }
+.nt .users-form input[type="text"],.nt .users-form input[type="password"],.nt .users-edit input[type="text"],.nt .users-edit input[type="password"] { width:100%; border:1px solid var(--rule); border-radius:7px; padding:9px 10px; font:inherit; background:var(--paper); color:var(--ink); }
+.nt .users-check { display:flex!important; align-items:center; gap:8px!important; width:max-content; }
+.nt .users-list { display:grid; gap:8px; }
+.nt .users-card { padding:14px 16px; }
+.nt .users-card-line { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.nt .users-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.nt .users-actions .btn { padding:7px 12px; font-size:12px; }
+.nt .users-delete { background:var(--sig); color:#fff; }
+.nt .users-delete:hover { background:#9E1837; }
+.nt .users-self { color:var(--ink-3); font-size:12px; }
+.nt .users-error { margin:0; padding:10px 12px; background:#FAE3E8; color:#8E1733; border-radius:7px; font-size:13px; }
 .nt .empty-state { text-align:center; padding:44px 20px; color:var(--ink-2); }
 .nt .modal-backdrop { position:fixed; inset:0; background:rgba(20,28,38,.45);
   display:flex; align-items:center; justify-content:center; padding:20px; z-index:50; }
@@ -130,4 +159,5 @@
 @media (max-width:640px) {
   .nt .bar { width:80px; } .nt .stats { gap:18px; }
   .nt .grade { min-width:calc(50% - 3px); }
+  .nt .users-card-line { align-items:flex-start; flex-direction:column; }
 }

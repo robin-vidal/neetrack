@@ -26,6 +26,10 @@ type Store interface {
 	UpsertProblemLink(ctx context.Context, userID int64, problemSlug, neetcodeSlug string) error
 	ProblemLinks(ctx context.Context, userID int64) (map[string]string, error)
 	ProblemMastery(ctx context.Context, userID int64) (map[string]int, error)
+	AdminUsers(ctx context.Context) ([]store.ManagedUser, error)
+	CreateManagedUser(ctx context.Context, name, passwordHash string, isAdmin bool) (store.ManagedUser, error)
+	UpdateManagedUser(ctx context.Context, id int64, name *string, passwordHash *string, isAdmin *bool) (store.ManagedUser, error)
+	DeleteManagedUser(ctx context.Context, id int64) error
 }
 
 // Server holds the dependencies handlers need, passed in explicitly by main.
@@ -62,6 +66,10 @@ func (s *Server) Routes() *http.ServeMux {
 	mux.Handle("GET /api/activity", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleActivity)))
 	mux.Handle("GET /api/settings", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleGetSettings)))
 	mux.Handle("PATCH /api/settings", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handlePatchSettings)))
+	mux.Handle("GET /api/admin/users", auth.RequireAuth(s.auth)(s.requireAdmin(http.HandlerFunc(s.handleListUsers))))
+	mux.Handle("POST /api/admin/users", auth.RequireAuth(s.auth)(s.requireAdmin(http.HandlerFunc(s.handleCreateUser))))
+	mux.Handle("PATCH /api/admin/users/{id}", auth.RequireAuth(s.auth)(s.requireAdmin(http.HandlerFunc(s.handleUpdateUser))))
+	mux.Handle("DELETE /api/admin/users/{id}", auth.RequireAuth(s.auth)(s.requireAdmin(http.HandlerFunc(s.handleDeleteUser))))
 	mux.Handle("PUT /api/links/{slug}", auth.RequireAuth(s.auth)(http.HandlerFunc(s.handleUpsertLink)))
 	mux.Handle("GET /", spaHandler())
 	return mux

@@ -10,14 +10,15 @@ import "./tracker.css";
 
 interface TrackerProps {
   user: Me;
-  logout: ReactNode;
+  profileMenu: (onManageUsers: () => void) => ReactNode;
+  onOpenAdmin: () => void;
 }
 
 type Tab = "patterns" | "session" | "settings";
 
 /** Tracker renders the authenticated shell: header, stats, heatmap, tabs and
  * their content. */
-export function Tracker({ user, logout }: TrackerProps) {
+export function Tracker({ user, profileMenu, onOpenAdmin }: TrackerProps) {
   const [tab, setTab] = useState<Tab>("patterns");
 
   return (
@@ -27,7 +28,7 @@ export function Tracker({ user, logout }: TrackerProps) {
           <div>
             <h1>Le suivi de {user.name}</h1>
           </div>
-          {logout}
+          {profileMenu(onOpenAdmin)}
         </div>
 
         <StatsRow />

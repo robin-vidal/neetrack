@@ -1,5 +1,6 @@
 /bin/
 /tmp/
+backups/
 node_modules/
 web/dist/
 *.env

@@ -24,6 +24,42 @@ services:
       COOKIE_SECURE: "true"
       LOG_LEVEL: "INFO"
 
+  backup:
+    profiles: ["backup"]
+    build: ./backup
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - path: ./backup.env
+        required: false
+    environment:
+      PGHOST: db
+      PGPORT: "5432"
+      PGUSER: neetrack
+      PGDATABASE: neetrack
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      BACKUP_DIR: /backups
+      TZ: UTC
+    volumes:
+      - ./backups:/backups
+    restart: unless-stopped
+
+  restore-db:
+    profiles: ["restore-check"]
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: neetrack
+      POSTGRES_PASSWORD: restore-check
+      POSTGRES_DB: postgres
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U neetrack"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+
   caddy:
     image: caddy:alpine
     depends_on:
