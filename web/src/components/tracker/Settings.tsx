@@ -9,6 +9,7 @@ type FormState = {
   targetDate: string; // "" means no target date
   blockSize: number;
   openMax: number;
+  includeHard: boolean;
 };
 
 function toFormState(s: SettingsType): FormState {
@@ -17,11 +18,13 @@ function toFormState(s: SettingsType): FormState {
     targetDate: s.target_date ?? "",
     blockSize: s.block_size,
     openMax: s.open_max,
+    includeHard: s.include_hard,
   };
 }
 
 /** Settings lets the user tune the FSRS retention target, target date,
- * learning block size and how many new patterns a session may open. */
+ * learning block size, how many new patterns a session may open and whether
+ * hard problems are scheduled. */
 export function Settings() {
   const { state, setState } = useSettings();
   const [form, setForm] = useState<FormState | null>(null);
@@ -60,6 +63,7 @@ export function Settings() {
         target_date: form.targetDate,
         block_size: form.blockSize,
         open_max: form.openMax,
+        include_hard: form.includeHard,
       });
       setState({ status: "ready", settings: updated });
       setSaved(true);
@@ -164,6 +168,21 @@ export function Settings() {
           {form.openMax}
         </span>
       </div>
+
+      <hr style={{ border: "none", borderTop: "1px solid var(--rule)", margin: "22px 0" }} />
+
+      <label htmlFor="exclude-hard" style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 500 }}>
+        <input
+          id="exclude-hard"
+          type="checkbox"
+          checked={!form.includeHard}
+          onChange={(e) => setForm({ ...form, includeHard: !e.target.checked })}
+        />
+        Exclusion des difficiles
+      </label>
+      <p className="muted" style={{ marginTop: 4, marginBottom: 0 }}>
+        Activé, les sessions ne proposent plus aucun problème difficile, ni en découverte ni en révision.
+      </p>
 
       {error && (
         <p role="alert" style={{ color: "var(--sig)", fontSize: 13, margin: "22px 0 0" }}>

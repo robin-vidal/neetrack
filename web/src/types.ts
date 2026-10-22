@@ -90,6 +90,7 @@ export interface Settings {
   open_max: number;
   new_pct: number;
   session_size: number;
+  include_hard: boolean;
 }
 
 /** PatchSettingsRequest mirrors the PATCH /api/settings request body. Only
