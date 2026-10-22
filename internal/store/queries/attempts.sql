@@ -47,3 +47,7 @@ SELECT problem_slug, pattern, rating, duration_seconds, used_hint, saw_solution,
 FROM attempts
 WHERE user_id = $1
 ORDER BY created_at;
+
+-- name: CreateAttemptAt :exec
+INSERT INTO attempts (user_id, problem_slug, pattern, rating, duration_seconds, used_hint, saw_solution, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8);

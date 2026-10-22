@@ -13,6 +13,7 @@ type Querier interface {
 	AttemptLogByUser(ctx context.Context, userID int64) ([]AttemptLogByUserRow, error)
 	AttemptsByUser(ctx context.Context, userID int64) ([]AttemptsByUserRow, error)
 	CreateAttempt(ctx context.Context, arg CreateAttemptParams) error
+	CreateAttemptAt(ctx context.Context, arg CreateAttemptAtParams) error
 	CreateDefaultSettings(ctx context.Context, userID int64) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) error
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)

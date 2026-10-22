@@ -115,6 +115,56 @@ func patternCard(ctx context.Context, q *storedb.Queries, userID int64, pattern 
 	return cardFromFields(row.Pattern, row.Stability, row.Difficulty, row.DueAt, row.LastReviewAt, row.Reps, row.Lapses, row.State), nil
 }
 
+// LoggedAttempt is an attempt written with an explicit timestamp, as when
+// seeding a history.
+type LoggedAttempt struct {
+	Problem     catalog.Problem
+	Rating      fsrs.Rating
+	Duration    time.Duration
+	UsedHint    bool
+	SawSolution bool
+	CreatedAt   time.Time
+}
+
+// AppendAttempts writes attempts for userID in a single transaction. It
+// leaves pattern cards untouched: call ReplayCards afterwards.
+func (s *Store) AppendAttempts(ctx context.Context, userID int64, attempts []LoggedAttempt) error {
+	tx, err := s.pool.Begin(ctx)
+	if err != nil {
+		return fmt.Errorf("beginning transaction: %w", err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	q := s.queries.WithTx(tx)
+
+	for _, a := range attempts {
+		var durationSeconds pgtype.Int4
+		if a.Duration > 0 {
+			durationSeconds = pgtype.Int4{Int32: int32(a.Duration.Seconds()), Valid: true}
+		}
+
+		err := q.CreateAttemptAt(ctx, storedb.CreateAttemptAtParams{
+			UserID:          userID,
+			ProblemSlug:     a.Problem.Slug,
+			Pattern:         a.Problem.Pattern,
+			Rating:          int16(a.Rating),
+			DurationSeconds: durationSeconds,
+			UsedHint:        a.UsedHint,
+			SawSolution:     a.SawSolution,
+			CreatedAt:       pgtype.Timestamptz{Time: a.CreatedAt, Valid: true},
+		})
+		if err != nil {
+			return fmt.Errorf("creating attempt: %w", err)
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return fmt.Errorf("committing transaction: %w", err)
+	}
+
+	return nil
+}
+
 // AttemptIndex returns the time of each problem's most recent attempt.
 func (s *Store) AttemptIndex(ctx context.Context, userID int64) (scheduler.AttemptIndex, error) {
 	rows, err := s.queries.LastAttemptPerProblem(ctx, userID)

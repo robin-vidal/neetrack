@@ -155,6 +155,36 @@ func (q *Queries) CreateAttempt(ctx context.Context, arg CreateAttemptParams) er
 	return err
 }
 
+const createAttemptAt = `-- name: CreateAttemptAt :exec
+INSERT INTO attempts (user_id, problem_slug, pattern, rating, duration_seconds, used_hint, saw_solution, created_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+`
+
+type CreateAttemptAtParams struct {
+	UserID          int64              `json:"user_id"`
+	ProblemSlug     string             `json:"problem_slug"`
+	Pattern         string             `json:"pattern"`
+	Rating          int16              `json:"rating"`
+	DurationSeconds pgtype.Int4        `json:"duration_seconds"`
+	UsedHint        bool               `json:"used_hint"`
+	SawSolution     bool               `json:"saw_solution"`
+	CreatedAt       pgtype.Timestamptz `json:"created_at"`
+}
+
+func (q *Queries) CreateAttemptAt(ctx context.Context, arg CreateAttemptAtParams) error {
+	_, err := q.db.Exec(ctx, createAttemptAt,
+		arg.UserID,
+		arg.ProblemSlug,
+		arg.Pattern,
+		arg.Rating,
+		arg.DurationSeconds,
+		arg.UsedHint,
+		arg.SawSolution,
+		arg.CreatedAt,
+	)
+	return err
+}
+
 const doneCountByPattern = `-- name: DoneCountByPattern :many
 SELECT pattern, COUNT(DISTINCT problem_slug) AS done
 FROM attempts
