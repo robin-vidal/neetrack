@@ -1,4 +1,4 @@
-.PHONY: dev build test lint migrate sqlc adduser
+.PHONY: dev build test lint migrate sqlc adduser seed
 
 dev:
 	docker compose -f compose.dev.yaml up --build
@@ -21,3 +21,6 @@ sqlc:
 
 adduser:
 	go run ./cmd/neetrack adduser $(NAME)
+
+seed:
+	go run ./cmd/neetrack seed --user=$(NAME)
