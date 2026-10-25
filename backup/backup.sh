@@ -22,5 +22,8 @@ if ! restic snapshots >/dev/null 2>&1; then
 fi
 
 restic backup "$dump_file" --host neetrack --tag postgresql
-restic forget --host neetrack --keep-daily 7 --prune
+# Each dump has a new filename, and restic groups by host+paths by default, so every
+# snapshot was its own group and --keep-daily never pruned anything (39 kept by
+# 2026-10-25). Group by host and tags so the 7-day policy applies to the series.
+restic forget --host neetrack --tag postgresql --group-by host,tags --keep-daily 7 --prune
 find "${BACKUP_DIR:-/backups}" -type f -name 'neetrack-*.dump' -mtime +7 -delete
