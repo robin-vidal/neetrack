@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17-alpine
+    image: postgres:17.10-alpine
     environment:
       POSTGRES_USER: neetrack
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -47,7 +47,7 @@ services:
 
   restore-db:
     profiles: ["restore-check"]
-    image: postgres:17-alpine
+    image: postgres:17.10-alpine
     environment:
       POSTGRES_USER: neetrack
       POSTGRES_PASSWORD: restore-check
