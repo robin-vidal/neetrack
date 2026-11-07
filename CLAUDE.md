@@ -1,3 +1,5 @@
+> PARKED 2026-11-07 (Samy): no new work unless he asks. The push and co-author rules below apply only if he revives it.
+
 # Neetrack
 
 Neetcode 150 tracker with spaced repetition. Go + React monorepo, self-hosted.
